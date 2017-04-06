@@ -2,7 +2,7 @@
 
 Code for Team 2.3 - Project 2
 
-DUE April 21st (tentative)
+DUE April 28th (tentative)
 
 To be done in Python 2.7 and deployed for Team 1.3
 
@@ -18,18 +18,18 @@ Windows version will be compiled to .exe using py2exe, Mac runs Python 2.7 nativ
 
 **Software must implement all of the bullet pointed methods:**
 
-A. Interpolation 
+A. Interpolation
 
- - Chebyshev 
+ - Chebyshev
  - Splines (cubic)
  - Bezier
- 
-B. Least Squares 
 
- - Linear 
+B. Least Squares
+
+ - Linear
  - Nonlinear
 
-C. Differentiation and Integration 
+C. Differentiation and Integration
 
  - Differentiation
 	 - Difference Methods
