@@ -30,6 +30,8 @@ from Tkinter import *
 from ttk import *
 from chebyshev import Chebyshev
 import math
+from universal_function import f
+import numpy
 import importlib
 
 class App(Frame):
@@ -152,28 +154,31 @@ class App(Frame):
         fCheb = Entry(mainFrame, width = 40)
         fCheb.grid(row = 4, sticky = W, padx = 50)
 
+        # x label and entry box
+        xLabel = Label(mainFrame, text="x = ").grid(row=5, sticky=W)
+        xCheb = Entry(mainFrame, width=40)
+        xCheb.grid(row=5, sticky=W, padx=50)
+
         # Submit Button
-        submitBtn = Button(mainFrame, text = "Submit", command = lambda: self.doCheby(aCheb.get(), bCheb.get(), dCheb.get(), fCheb.get()))
-        submitBtn.grid(row = 5, pady = 10)
+        submitBtn = Button(mainFrame, text = "Submit", command = lambda: self.doCheby(aCheb.get(), bCheb.get(), dCheb.get(), fCheb.get(), xCheb.get()))
+        submitBtn.grid(row = 6, pady = 10)
 
         # Result Label and Result Box 
-        Label(mainFrame, text = "Result:").grid(row = 6, sticky = W)
+        Label(mainFrame, text = "Result:").grid(row = 7, sticky = W)
         resultMsg = Entry(mainFrame, width = 40, textvariable = self.chebResult)
-        resultMsg.grid(row = 6, sticky = W, padx = 50)
+        resultMsg.grid(row = 7, sticky = W, padx = 50)
 
         # Error Label and Result Box
-        Label(mainFrame, text = "Error:").grid(row = 7, sticky = W)
+        Label(mainFrame, text = "Error:").grid(row = 8, sticky = W)
         errMsg = Entry(mainFrame, width = 40, textvariable = self.chebErr)
-        errMsg.grid(row = 7, sticky = W, padx = 50)
+        errMsg.grid(row = 8, sticky = W, padx = 50)
 
     # Function Calculates Chebyshev sets Result/Error Fields
-    def doCheby(self, a, b, d, f):
-        mod_name, func_name = f.rsplit('.',1)
-        mod = importlib.import_module(mod_name)
-        func = getattr(mod, func_name)
-        c = Chebyshev(int(a), int(b), int(d), func)
-        self.chebResult.set(c.eval(1))
-        self.chebErr.set(math.exp(1) / (math.pow(2, 4) * math.factorial(5)))
+    def doCheby(self, a, b, d, func_str, x):
+        d = int(d)
+        c = Chebyshev(int(a), int(b), int(d), f, func_str)
+        self.chebResult.set(c.eval(x))
+        self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
         
     def splinesWindow(self):
         # create window

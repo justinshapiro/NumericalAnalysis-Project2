@@ -9,19 +9,23 @@ class Chebyshev:
     Method eval(x) yields the approximated function value.
     """
 
-    def __init__(self, a, b, n, func):
+    def __init__(self, a, b, n, func, eval_str):
         self.a = a
         self.b = b
         self.func = func
 
         bma = 0.5 * (b - a)
         bpa = 0.5 * (b + a)
-        f = [func(math.cos(math.pi * (k + 0.5) / n) * bma + bpa) for k in range(n)]
+        f = [func(math.cos(math.pi * (k + 0.5) / n) * bma + bpa, eval_str) for k in range(n)]
         fac = 2.0 / n
         self.c = [fac * sum([f[k] * math.cos(math.pi * j * (k + 0.5) / n)
                   for k in range(n)]) for j in range(n)]
 
     def eval(self, x):
+        if x.find('.') != -1:
+            x = float(x)
+        else:
+            x = int(x)
         a,b = self.a, self.b
         assert(a <= x <= b)
         y = (2.0 * x - a - b) * (1.0 / (b - a))
