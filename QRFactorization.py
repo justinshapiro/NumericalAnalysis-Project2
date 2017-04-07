@@ -1,4 +1,6 @@
 
+#Linear Least Squares
+
 """
 To calculate the QR Factorization of a matrix A to 
 solve the least squares problem
@@ -12,7 +14,7 @@ import pprint
 import scipy
 import scipy.linalg   # SciPy Linear Algebra Library
 
-   A = scipy.array([[1, -4], [2,3], [2,2]])  # test values
+   A = scipy.array([[1, -4], [2,3], [2,2]])  # test values, also tested 3 by 3
    Q, R = scipy.linalg.qr(A)
    
    print "A:"
