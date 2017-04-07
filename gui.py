@@ -120,7 +120,7 @@ class App(Frame):
         self.quit.pack(fill = 'x')
 
     def chebyWindow(self):
-        # create window
+        # create Chebyshev window
         self.cheby = Toplevel()
         self.cheby.title("Chebyshev")
         self.cheby.resizable(0,0)
@@ -128,25 +128,31 @@ class App(Frame):
         self.chebErr = DoubleVar()
         mainFrame = Frame(self.cheby)
         mainFrame.pack()
-        
-        mainLabel = Label(mainFrame, text = "Enter Interval [a, b]:").grid(row = 0, sticky = W)
-    
+
+        # Interval Label
+        Label(mainFrame, text = "Enter Interval [a, b]:").grid(row = 0, sticky = W)
+
+        # a label and entry box
         aLabel = Label(mainFrame, text = "a:").grid(row = 1, sticky = W)
         aCheb = Entry(mainFrame, width = 40)
         aCheb.grid(row = 1, sticky = W, padx = 50)
-        
+
+        # b label and entry box
         bLabel = Label(mainFrame, text = "b:").grid(row = 2, sticky = W)
         bCheb = Entry(mainFrame, width = 40)
         bCheb.grid(row = 2, sticky = W, padx = 50)
 
+        # degree label and entry box
         dLabel = Label(mainFrame, text = "Degree:").grid(row = 3, sticky = W)
         dCheb = Entry(mainFrame, width = 40)
         dCheb.grid(row = 3, sticky = W, padx = 50)
 
+        # f(x) label and entry box
         fLabel = Label(mainFrame, text = "f(x):").grid(row = 4, sticky = W)
         fCheb = Entry(mainFrame, width = 40)
         fCheb.grid(row = 4, sticky = W, padx = 50)
-        
+
+        # Submit Button
         submitBtn = Button(mainFrame, text = "Submit", command = lambda: self.doCheby(aCheb.get(), bCheb.get(), dCheb.get(), fCheb.get()))
         submitBtn.grid(row = 5, pady = 10)
 
@@ -160,6 +166,7 @@ class App(Frame):
         errMsg = Entry(mainFrame, width = 40, textvariable = self.chebErr)
         errMsg.grid(row = 7, sticky = W, padx = 50)
 
+    # Function Calculates Chebyshev sets Result/Error Fields
     def doCheby(self, a, b, d, f):
         mod_name, func_name = f.rsplit('.',1)
         mod = importlib.import_module(mod_name)
