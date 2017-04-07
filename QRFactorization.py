@@ -21,3 +21,7 @@ import scipy.linalg   # SciPy Linear Algebra Library
    
    print "R:"          # R must be an upper triangular matrix
    pprint.pprint(R)
+
+   
+   
+   
