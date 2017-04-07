@@ -1,8 +1,10 @@
 
 """
-To calculate the QR Factorization of a matrix A
-with NumPy/SciPy, used  the built-in
-linalg library via the linalg.qr function.
+To calculate the QR Factorization of a matrix A to 
+solve the least squares problem
+with NumPy/SciPy. 
+Used  the built-in linalg library via 
+the linalg.qr function.
 
 """
 
