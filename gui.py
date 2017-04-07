@@ -177,8 +177,11 @@ class App(Frame):
     def doCheby(self, a, b, d, func_str, x):
         d = int(d)
         c = Chebyshev(int(a), int(b), int(d), f, func_str)
-        self.chebResult.set(c.eval(x))
-        self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
+        if c.func != "err":
+            eval = c.eval(x)
+            if eval != "err":
+                self.chebResult.set(eval)
+                self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
         
     def splinesWindow(self):
         # create window
