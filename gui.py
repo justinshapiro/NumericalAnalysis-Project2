@@ -192,8 +192,110 @@ class App(Frame):
     def bezierWindow(self):
         # create window
         self.bezier = Toplevel()
-        quitBtn = Button(self.bezier, text = "Submit")
-        quitBtn.pack()
+        self.bezier.title("Bezier")
+        # self.bezier.resizable(0, 0)
+        mainFrame = Frame(self.bezier)
+        Grid.columnconfigure(mainFrame, 0, weight=1)
+        mainFrame.pack()
+
+        # x(t) =
+        Label(mainFrame, text="x(t) =").grid(row=0, column=0, sticky=W, padx=0)
+
+        # x1:
+        x1Label = Label(mainFrame, text="x1:").grid(row=0, column = 1, sticky=W)
+        aBezier = Entry(mainFrame, width=3)
+        aBezier.grid(row=0, column=1, columnspan=100, sticky=W, padx=25)
+
+        Label(mainFrame, text="+   ").grid(row=0, column=1, sticky=E)
+
+        # bx:
+        bxLabel = Label(mainFrame, text="bx:").grid(row=0, column = 2, sticky=W)
+        bBezier = Entry(mainFrame, width=3)
+        bBezier.grid(row=0, column = 2, sticky=W, padx=25)
+
+        Label(mainFrame, text="t  +").grid(row=0, column=2, sticky=E)
+
+        # cx:
+        cxLabel = Label(mainFrame, text="cx:").grid(row=0, column=3, sticky=W)
+        cBezier = Entry(mainFrame, width=3)
+        cBezier.grid(row=0, column=3, sticky=W, padx=25)
+
+        Label(mainFrame, text="t^2 +").grid(row=0, column=3, sticky=E)
+
+        mainFrame.grid_columnconfigure(3, weight=5)
+
+        # dx:
+        dxLabel = Label(mainFrame, text="dx:").grid(row=0, column=4, sticky=W)
+        dBezier = Entry(mainFrame, width=3)
+        dBezier.grid(row=0, column=4, sticky=W, padx=25)
+
+        Label(mainFrame, text="t^3").grid(row=0, column=4, sticky=E)
+
+        # y(t) =
+        Label(mainFrame, text="y(t) = ").grid(row=1, column=0, sticky=W)
+
+        # y1:
+        y1Label = Label(mainFrame, text="y1:").grid(row=1, column=1, sticky=W)
+        eBezier = Entry(mainFrame, width=3)
+        eBezier.grid(row=1, column=1, sticky=W, padx=25)
+
+        Label(mainFrame, text="+   ").grid(row=1, column=1, sticky=E)
+
+        # by:
+        byLabel = Label(mainFrame, text="by:").grid(row=1, column=2, sticky=W)
+        fBezier = Entry(mainFrame, width=3)
+        fBezier.grid(row=1, column=2, sticky=W, padx=25)
+
+        Label(mainFrame, text="t  +").grid(row=1, column=2, sticky=E)
+
+        # cy:
+        cyLabel = Label(mainFrame, text="cy:").grid(row=1, column=3, sticky=W)
+        gBezier = Entry(mainFrame, width=3)
+        gBezier.grid(row=1, column=3, sticky=W, padx=25)
+
+        Label(mainFrame, text="t^2 +").grid(row=1, column=3, sticky=E)
+
+        # dy:
+        dyLabel = Label(mainFrame, text="dy:").grid(row=1, column=4, sticky=W)
+        hBezier = Entry(mainFrame, width=3)
+        hBezier.grid(row=1, column=4, sticky=W, padx=25)
+
+        Label(mainFrame, text="t^3").grid(row=1, column=4, sticky=E)
+
+        # Submit Button
+        vals = [aBezier.get(), bBezier.get(), cBezier.get(), dBezier.get(),
+                eBezier.get(), fBezier.get(), gBezier.get(), hBezier.get()]
+        submitBtn = Button(mainFrame, text="Submit", command=lambda: self.doBezier(vals))
+        submitBtn.grid(row=2, column=0, pady=10)
+
+        # Endpoints
+        endLabel = Label(mainFrame, text="Endpoints:").grid(row=3, column=0, sticky=W)
+        endPoints = Entry(mainFrame, width=25)
+        endPoints.grid(row=3, column=1, sticky=W, padx=25)
+
+        # Control Points
+        endLabel = Label(mainFrame, text="Control Points:").grid(row=4, column=0, sticky=W)
+        endPoints = Entry(mainFrame, width=25)
+        endPoints.grid(row=4, column=1, sticky=W, padx=25)
+
+        Label(mainFrame, text="t^2 +").grid(row=1, column=3, sticky=E)
+
+    def doBezier(self, vals):
+        x1 = float(vals[0])
+        bx = float(vals[1])
+        cx = float(vals[2])
+        dx = float(vals[3])
+        y1 = float(vals[4])
+        by = float(vals[5])
+        cy = float(vals[6])
+        dy = float(vals[7])
+        x2 = float((bx - 3 * x1) / 3.0)
+        x3 = float((cx + 3 * x2 + bx) / 3.0)
+        x4 = float(dx + x1 + bx + cx)
+        y2 = float((by - 3 * y1) / 3.0)
+        y3 = float((cy + 3 * y2 + by) / 3.0)
+        y4 = float(dy + y1 + by + cy)
+
         
     def start(self):
         self.root.mainloop()
