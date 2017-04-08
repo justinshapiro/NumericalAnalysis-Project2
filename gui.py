@@ -311,6 +311,9 @@ class App(Frame):
         self.bezierEndpoints.set(e1 + " and " + e2)
         self.bezierControlPoints.set(c1 + " and " + c2)
 
+        axes = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 16}
+        in_graph = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 10}
+
         data_points_x = [x1, x2, x3, x4]
         data_points_y = [y1, y2, y3, y4]
         nodes = np.array([
@@ -319,11 +322,21 @@ class App(Frame):
             [x3, y3],
             [x4, x4],
         ])
+
+        plot_min_x = min(data_points_x) - 0.25
+        plot_max_x = max(data_points_x) + 0.25
+        plot_min_y = min(data_points_y) - 0.25
+        plot_max_y = max(data_points_y) + 0.25
+
         curve = bezier.Curve(nodes, degree=3)
-        ax = curve.plot(num_pts=256)
-        ax.axis('scaled')
-        ax.set_xlim(min(data_points_x) - 0.25, max(data_points_x) + 0.25)
-        ax.set_ylim(min(data_points_y) - 0.25, max(data_points_y) + 0.25)
+        plot = curve.plot(num_pts=256)
+        plot.axis('scaled')
+        plot.set_xlim(plot_min_x, plot_max_x)
+        plot.set_ylim(plot_min_y, plot_max_y)
+
+        plt.title("Bezier Curve", fontdict=axes)
+        plt.text(plot_min_x, plot_max_y - 0.25, "Endpoints: " + e1 + " and " + e2, fontdict=in_graph)
+        plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
         plt.show()
 
     def start(self):
