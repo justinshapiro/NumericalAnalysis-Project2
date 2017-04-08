@@ -204,81 +204,63 @@ class App(Frame):
         Label(mainFrame, text="x(t) =").grid(row=0, column=0, sticky=W, padx=0)
 
         # x1:
-        x1Label = Label(mainFrame, text="x1:").grid(row=0, column = 1, sticky=W)
+        x1Label = Label(mainFrame, text="x1:").grid(row=1, column = 0, sticky=W)
         aBezier = Entry(mainFrame, width=3)
-        aBezier.grid(row=0, column=1, sticky=W, padx=25)
-
-        Label(mainFrame, text="+   ").grid(row=0, column=1, sticky=E)
+        aBezier.grid(row=1, column=1, sticky=W, padx=25)
 
         # bx:
-        bxLabel = Label(mainFrame, text="bx:").grid(row=0, column = 2, sticky=W)
+        bxLabel = Label(mainFrame, text="bx:").grid(row=2, column=0, sticky=W)
         bBezier = Entry(mainFrame, width=3)
-        bBezier.grid(row=0, column = 2, sticky=W, padx=25)
-
-        Label(mainFrame, text="t  +").grid(row=0, column=2, sticky=E)
+        bBezier.grid(row=2, column = 1, sticky=W, padx=25)
 
         # cx:
-        cxLabel = Label(mainFrame, text="cx:").grid(row=0, column=3, sticky=W)
+        cxLabel = Label(mainFrame, text="cx:").grid(row=3, column=0, sticky=W)
         cBezier = Entry(mainFrame, width=3)
-        cBezier.grid(row=0, column=3, sticky=W, padx=25)
-
-        Label(mainFrame, text="t^2 +").grid(row=0, column=3, sticky=E)
-
-        mainFrame.grid_columnconfigure(3, weight=5)
+        cBezier.grid(row=3, column=1, sticky=W, padx=25)
 
         # dx:
-        dxLabel = Label(mainFrame, text="dx:").grid(row=0, column=4, sticky=W)
+        dxLabel = Label(mainFrame, text="dx:").grid(row=4, column=0, sticky=W)
         dBezier = Entry(mainFrame, width=3)
-        dBezier.grid(row=0, column=4, sticky=W, padx=25)
-
-        Label(mainFrame, text="t^3").grid(row=0, column=4, sticky=E)
+        dBezier.grid(row=4, column=1, sticky=W, padx=25)
 
         # y(t) =
-        Label(mainFrame, text="y(t) = ").grid(row=1, column=0, sticky=W)
+        Label(mainFrame, text="y(t) = ").grid(row=0, column=2)
 
         # y1:
-        y1Label = Label(mainFrame, text="y1:").grid(row=1, column=1, sticky=W)
+        y1Label = Label(mainFrame, text="y1:").grid(row=1, column=2, sticky=W)
         eBezier = Entry(mainFrame, width=3)
-        eBezier.grid(row=1, column=1, sticky=W, padx=25)
-
-        Label(mainFrame, text="+   ").grid(row=1, column=1, sticky=E)
+        eBezier.grid(row=1, column=3, sticky=W, padx=25)
 
         # by:
-        byLabel = Label(mainFrame, text="by:").grid(row=1, column=2, sticky=W)
+        byLabel = Label(mainFrame, text="by:").grid(row=2, column=2, sticky=W)
         fBezier = Entry(mainFrame, width=3)
-        fBezier.grid(row=1, column=2, sticky=W, padx=25)
-
-        Label(mainFrame, text="t  +").grid(row=1, column=2, sticky=E)
+        fBezier.grid(row=2, column=3, sticky=W, padx=25)
 
         # cy:
-        cyLabel = Label(mainFrame, text="cy:").grid(row=1, column=3, sticky=W)
+        cyLabel = Label(mainFrame, text="cy:").grid(row=3, column=2, sticky=W)
         gBezier = Entry(mainFrame, width=3)
-        gBezier.grid(row=1, column=3, sticky=W, padx=25)
-
-        Label(mainFrame, text="t^2 +").grid(row=1, column=3, sticky=E)
+        gBezier.grid(row=3, column=3, sticky=W, padx=25)
 
         # dy:
-        dyLabel = Label(mainFrame, text="dy:").grid(row=1, column=4, sticky=W)
+        dyLabel = Label(mainFrame, text="dy:").grid(row=4, column=2, sticky=W)
         hBezier = Entry(mainFrame, width=3)
-        hBezier.grid(row=1, column=4, sticky=W, padx=25)
-
-        Label(mainFrame, text="t^3").grid(row=1, column=4, sticky=E)
+        hBezier.grid(row=4, column=3, sticky=W, padx=25)
 
         # Submit Button
         submitBtn = Button(mainFrame, text="Submit",
                            command=lambda: self.doBezier([aBezier.get(), bBezier.get(), cBezier.get(), dBezier.get(),
                                                           eBezier.get(), fBezier.get(), gBezier.get(), hBezier.get()]))
-        submitBtn.grid(row=2, column=0, pady=10)
+        submitBtn.grid(row=5, column=3, rowspan=2, columnspan=10, pady=10, sticky=W)
 
         # Endpoints
-        endLabel = Label(mainFrame, text="Endpoints:").grid(row=3, column=0, sticky=W)
+        endLabel = Label(mainFrame, text="Endpoints:").grid(row=5, column=0, sticky=W)
         endPoints = Entry(mainFrame, width=25, textvariable=self.bezierEndpoints)
-        endPoints.grid(row=3, column=1, sticky=W, padx=25)
+        endPoints.grid(row=5, column=1, sticky=W, padx=25)
 
         # Control Points
-        endLabel = Label(mainFrame, text="Control Points:").grid(row=4, column=0, sticky=W)
+        endLabel = Label(mainFrame, text="Control Points:").grid(row=6, column=0, sticky=W)
         endPoints = Entry(mainFrame, width=25, textvariable=self.bezierControlPoints)
-        endPoints.grid(row=4, column=1, sticky=W, padx=25)
+        endPoints.grid(row=6, column=1, sticky=W, padx=25)
 
     def doBezier(self, vals):
         print(vals[0])
