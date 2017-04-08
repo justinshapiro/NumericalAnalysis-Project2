@@ -31,8 +31,9 @@ from ttk import *
 from chebyshev import Chebyshev
 import math
 from universal_function import f
-import numpy
-import importlib
+import numpy as np
+import bezier
+import matplotlib.pyplot as plt
 
 class App(Frame):
     def __init__(self):
@@ -163,7 +164,7 @@ class App(Frame):
         submitBtn = Button(mainFrame, text = "Submit", command = lambda: self.doCheby(aCheb.get(), bCheb.get(), dCheb.get(), fCheb.get(), xCheb.get()))
         submitBtn.grid(row = 6, pady = 10)
 
-        # Result Label and Result Box 
+        # Result Label and Result Box
         Label(mainFrame, text = "Result:").grid(row = 7, sticky = W)
         resultMsg = Entry(mainFrame, width = 40, textvariable = self.chebResult)
         resultMsg.grid(row = 7, sticky = W, padx = 50)
@@ -193,9 +194,10 @@ class App(Frame):
         # create window
         self.bezier = Toplevel()
         self.bezier.title("Bezier")
-        # self.bezier.resizable(0, 0)
+        self.bezier.resizable(0, 0)
+        self.bezierEndpoints = DoubleVar()
+        self.bezierControlPoints = DoubleVar()
         mainFrame = Frame(self.bezier)
-        Grid.columnconfigure(mainFrame, 0, weight=1)
         mainFrame.pack()
 
         # x(t) =
@@ -204,7 +206,7 @@ class App(Frame):
         # x1:
         x1Label = Label(mainFrame, text="x1:").grid(row=0, column = 1, sticky=W)
         aBezier = Entry(mainFrame, width=3)
-        aBezier.grid(row=0, column=1, columnspan=100, sticky=W, padx=25)
+        aBezier.grid(row=0, column=1, sticky=W, padx=25)
 
         Label(mainFrame, text="+   ").grid(row=0, column=1, sticky=E)
 
@@ -263,24 +265,23 @@ class App(Frame):
         Label(mainFrame, text="t^3").grid(row=1, column=4, sticky=E)
 
         # Submit Button
-        vals = [aBezier.get(), bBezier.get(), cBezier.get(), dBezier.get(),
-                eBezier.get(), fBezier.get(), gBezier.get(), hBezier.get()]
-        submitBtn = Button(mainFrame, text="Submit", command=lambda: self.doBezier(vals))
+        submitBtn = Button(mainFrame, text="Submit",
+                           command=lambda: self.doBezier([aBezier.get(), bBezier.get(), cBezier.get(), dBezier.get(),
+                                                          eBezier.get(), fBezier.get(), gBezier.get(), hBezier.get()]))
         submitBtn.grid(row=2, column=0, pady=10)
 
         # Endpoints
         endLabel = Label(mainFrame, text="Endpoints:").grid(row=3, column=0, sticky=W)
-        endPoints = Entry(mainFrame, width=25)
+        endPoints = Entry(mainFrame, width=25, textvariable=self.bezierEndpoints)
         endPoints.grid(row=3, column=1, sticky=W, padx=25)
 
         # Control Points
         endLabel = Label(mainFrame, text="Control Points:").grid(row=4, column=0, sticky=W)
-        endPoints = Entry(mainFrame, width=25)
+        endPoints = Entry(mainFrame, width=25, textvariable=self.bezierControlPoints)
         endPoints.grid(row=4, column=1, sticky=W, padx=25)
 
-        Label(mainFrame, text="t^2 +").grid(row=1, column=3, sticky=E)
-
     def doBezier(self, vals):
+        print(vals[0])
         x1 = float(vals[0])
         bx = float(vals[1])
         cx = float(vals[2])
@@ -289,14 +290,42 @@ class App(Frame):
         by = float(vals[5])
         cy = float(vals[6])
         dy = float(vals[7])
-        x2 = float((bx - 3 * x1) / 3.0)
+        x2 = float((bx + 3 * x1) / 3.0)
         x3 = float((cx + 3 * x2 + bx) / 3.0)
         x4 = float(dx + x1 + bx + cx)
-        y2 = float((by - 3 * y1) / 3.0)
+        y2 = float((by + 3 * y1) / 3.0)
         y3 = float((cy + 3 * y2 + by) / 3.0)
         y4 = float(dy + y1 + by + cy)
 
-        
+        endpoints = [[x1, y1], [x4, y4]]
+        control_points =[[x2, y2], [x3, y3]]
+
+        e1 = str(endpoints[0]).replace('[', '(')
+        e1 = e1.replace(']', ')')
+        e2 = str(endpoints[1]).replace('[', '(')
+        e2 = e2.replace(']', ')')
+        c1 = str(control_points[0]).replace('[', '(')
+        c1 = c1.replace(']', ')')
+        c2 = str(control_points[1]).replace('[', '(')
+        c2 = c2.replace(']', ')')
+        self.bezierEndpoints.set(e1 + " and " + e2)
+        self.bezierControlPoints.set(c1 + " and " + c2)
+
+        data_points_x = [x1, x2, x3, x4]
+        data_points_y = [y1, y2, y3, y4]
+        nodes = np.array([
+            [x1, y1],
+            [x2, y2],
+            [x3, y3],
+            [x4, x4],
+        ])
+        curve = bezier.Curve(nodes, degree=3)
+        ax = curve.plot(num_pts=256)
+        ax.axis('scaled')
+        ax.set_xlim(min(data_points_x) - 0.25, max(data_points_x) + 0.25)
+        ax.set_ylim(min(data_points_y) - 0.25, max(data_points_y) + 0.25)
+        plt.show()
+
     def start(self):
         self.root.mainloop()
 
