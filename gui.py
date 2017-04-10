@@ -31,8 +31,9 @@ from ttk import *
 from chebyshev import Chebyshev
 import math
 from universal_function import f
-import numpy
-import importlib
+import numpy as np
+import bezier
+import matplotlib.pyplot as plt
 
 class App(Frame):
     def __init__(self):
@@ -163,7 +164,7 @@ class App(Frame):
         submitBtn = Button(mainFrame, text = "Submit", command = lambda: self.doCheby(aCheb.get(), bCheb.get(), dCheb.get(), fCheb.get(), xCheb.get()))
         submitBtn.grid(row = 6, pady = 10)
 
-        # Result Label and Result Box 
+        # Result Label and Result Box
         Label(mainFrame, text = "Result:").grid(row = 7, sticky = W)
         resultMsg = Entry(mainFrame, width = 40, textvariable = self.chebResult)
         resultMsg.grid(row = 7, sticky = W, padx = 50)
@@ -177,8 +178,11 @@ class App(Frame):
     def doCheby(self, a, b, d, func_str, x):
         d = int(d)
         c = Chebyshev(int(a), int(b), int(d), f, func_str)
-        self.chebResult.set(c.eval(x))
-        self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
+        if c.func != "err":
+            eval = c.eval(x)
+            if eval != "err":
+                self.chebResult.set(eval)
+                self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
         
     def splinesWindow(self):
         # create window
@@ -189,9 +193,134 @@ class App(Frame):
     def bezierWindow(self):
         # create window
         self.bezier = Toplevel()
-        quitBtn = Button(self.bezier, text = "Submit")
-        quitBtn.pack()
-        
+        self.bezier.title("Bezier")
+        self.bezier.resizable(0, 0)
+        self.bezierEndpoints = DoubleVar()
+        self.bezierControlPoints = DoubleVar()
+        mainFrame = Frame(self.bezier)
+        mainFrame.pack()
+
+        # x(t) =
+        Label(mainFrame, text="x(t) =").grid(row=0, column=0, sticky=W, padx=0)
+
+        # x1:
+        x1Label = Label(mainFrame, text="x1:").grid(row=1, column = 0, sticky=W)
+        aBezier = Entry(mainFrame, width=3)
+        aBezier.grid(row=1, column=1, sticky=W, padx=25)
+
+        # bx:
+        bxLabel = Label(mainFrame, text="bx:").grid(row=2, column=0, sticky=W)
+        bBezier = Entry(mainFrame, width=3)
+        bBezier.grid(row=2, column = 1, sticky=W, padx=25)
+
+        # cx:
+        cxLabel = Label(mainFrame, text="cx:").grid(row=3, column=0, sticky=W)
+        cBezier = Entry(mainFrame, width=3)
+        cBezier.grid(row=3, column=1, sticky=W, padx=25)
+
+        # dx:
+        dxLabel = Label(mainFrame, text="dx:").grid(row=4, column=0, sticky=W)
+        dBezier = Entry(mainFrame, width=3)
+        dBezier.grid(row=4, column=1, sticky=W, padx=25)
+
+        # y(t) =
+        Label(mainFrame, text="y(t) = ").grid(row=0, column=2)
+
+        # y1:
+        y1Label = Label(mainFrame, text="y1:").grid(row=1, column=2, sticky=W)
+        eBezier = Entry(mainFrame, width=3)
+        eBezier.grid(row=1, column=3, sticky=W, padx=25)
+
+        # by:
+        byLabel = Label(mainFrame, text="by:").grid(row=2, column=2, sticky=W)
+        fBezier = Entry(mainFrame, width=3)
+        fBezier.grid(row=2, column=3, sticky=W, padx=25)
+
+        # cy:
+        cyLabel = Label(mainFrame, text="cy:").grid(row=3, column=2, sticky=W)
+        gBezier = Entry(mainFrame, width=3)
+        gBezier.grid(row=3, column=3, sticky=W, padx=25)
+
+        # dy:
+        dyLabel = Label(mainFrame, text="dy:").grid(row=4, column=2, sticky=W)
+        hBezier = Entry(mainFrame, width=3)
+        hBezier.grid(row=4, column=3, sticky=W, padx=25)
+
+        # Submit Button
+        submitBtn = Button(mainFrame, text="Submit",
+                           command=lambda: self.doBezier([aBezier.get(), bBezier.get(), cBezier.get(), dBezier.get(),
+                                                          eBezier.get(), fBezier.get(), gBezier.get(), hBezier.get()]))
+        submitBtn.grid(row=5, column=3, rowspan=2, columnspan=10, pady=10, sticky=W)
+
+        # Endpoints
+        endLabel = Label(mainFrame, text="Endpoints:").grid(row=5, column=0, sticky=W)
+        endPoints = Entry(mainFrame, width=25, textvariable=self.bezierEndpoints)
+        endPoints.grid(row=5, column=1, sticky=W, padx=25)
+
+        # Control Points
+        endLabel = Label(mainFrame, text="Control Points:").grid(row=6, column=0, sticky=W)
+        endPoints = Entry(mainFrame, width=25, textvariable=self.bezierControlPoints)
+        endPoints.grid(row=6, column=1, sticky=W, padx=25)
+
+    def doBezier(self, vals):
+        print(vals[0])
+        x1 = float(vals[0])
+        bx = float(vals[1])
+        cx = float(vals[2])
+        dx = float(vals[3])
+        y1 = float(vals[4])
+        by = float(vals[5])
+        cy = float(vals[6])
+        dy = float(vals[7])
+        x2 = float((bx + 3 * x1) / 3.0)
+        x3 = float((cx + 3 * x2 + bx) / 3.0)
+        x4 = float(dx + x1 + bx + cx)
+        y2 = float((by + 3 * y1) / 3.0)
+        y3 = float((cy + 3 * y2 + by) / 3.0)
+        y4 = float(dy + y1 + by + cy)
+
+        endpoints = [[x1, y1], [x4, y4]]
+        control_points =[[x2, y2], [x3, y3]]
+
+        e1 = str(endpoints[0]).replace('[', '(')
+        e1 = e1.replace(']', ')')
+        e2 = str(endpoints[1]).replace('[', '(')
+        e2 = e2.replace(']', ')')
+        c1 = str(control_points[0]).replace('[', '(')
+        c1 = c1.replace(']', ')')
+        c2 = str(control_points[1]).replace('[', '(')
+        c2 = c2.replace(']', ')')
+        self.bezierEndpoints.set(e1 + " and " + e2)
+        self.bezierControlPoints.set(c1 + " and " + c2)
+
+        axes = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 16}
+        in_graph = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 10}
+
+        data_points_x = [x1, x2, x3, x4]
+        data_points_y = [y1, y2, y3, y4]
+        nodes = np.array([
+            [x1, y1],
+            [x2, y2],
+            [x3, y3],
+            [x4, x4],
+        ])
+
+        plot_min_x = min(data_points_x) - 0.25
+        plot_max_x = max(data_points_x) + 0.25
+        plot_min_y = min(data_points_y) - 0.25
+        plot_max_y = max(data_points_y) + 0.25
+
+        curve = bezier.Curve(nodes, degree=3)
+        plot = curve.plot(num_pts=256)
+        plot.axis('scaled')
+        plot.set_xlim(plot_min_x, plot_max_x)
+        plot.set_ylim(plot_min_y, plot_max_y)
+
+        plt.title("Bezier Curve", fontdict=axes)
+        plt.text(plot_min_x, plot_max_y - 0.25, "Endpoints: " + e1 + " and " + e2, fontdict=in_graph)
+        plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
+        plt.show()
+
     def start(self):
         self.root.mainloop()
 
