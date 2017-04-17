@@ -3,6 +3,8 @@ import bezier
 import matplotlib.pyplot as plt
 import math
 import numpy as np
+import scipy
+from scipy import interpolate
 
 def sign_of(var):
     if var >= 0:
@@ -25,7 +27,7 @@ a = -1
 b = 1
 d = 5
 func = math.exp
-c = Chebyshev(a, b, d, func)
+c = Chebyshev(a, b, d, func, "")
 
 # to GUI
 result = c.eval(1)
@@ -84,4 +86,25 @@ y_t = "y(t) = " + str(y1) + sign_of(by) + \
       str(by) + "t" + sign_of(cy) + str(cy) + \
       "t^2"  + sign_of(dy) + str(dy) + "t^3"
 
+
+'''
+Cubic splines
+-------------
+Input: a set of data points
+Output: Spline equations S_i(x) for i = 0, ..., n - 1
+
+How many data points?: n = user_input
+Dynamically generate input boxes
+Generate list of required variables: [[delta_i, Delta_i]]
+'''
+
+x = np.array([1, 2, 4, 5])
+y = np.array([2, 1, 4, 3])
+xx = np.arange(np.amin(x), np.amax(x) + .01, 0.01)
+s1 = interpolate.InterpolatedUnivariateSpline(x, y)
+s2 = interpolate.UnivariateSpline(x[::-1], y[::-1], s=0.1)
+plt.plot (x, y, 'bo', label='Data')
+plt.plot (xx, s2(xx), 'r-', label='Spline, fit')
+plt.legend()
+plt.show()
 

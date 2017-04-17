@@ -2,9 +2,9 @@
 
 A. Interpolation
 
-    Chebyshev
+    Chebyshev -- DONE
     Splines (cubic)
-    Bezier
+    Bezier -- DONE
     
 B. Least Squares
 
