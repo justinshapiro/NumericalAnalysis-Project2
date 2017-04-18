@@ -552,7 +552,7 @@ class App(Frame):
                 scrollbar = Scrollbar(resultFrame)
                 scrollbar.pack(side=RIGHT, fill=Y)
 
-                self.qrTextBox = Text(resultFrame, width=60, height=(row * 3 ) + 4)
+                self.qrTextBox = Text(resultFrame)
                 self.qrTextBox.pack(fill = "both")
                 self.qrTextBox.config(yscrollcommand = scrollbar.set)
                 scrollbar.config(command = self.qrTextBox.yview)
@@ -576,7 +576,7 @@ class App(Frame):
         Q, R = scipy.linalg.qr(A)
 
         self.qrTextBox.insert(END, "A:\n")
-        for row in ourMatrix:
+        for row in np.matrix(ourMatrix):
             self.qrTextBox.insert(END, str(row) + '\n')
 
         self.qrTextBox.insert(END, "Q:\n")
