@@ -52,12 +52,12 @@ def householder(A):
         I = [[float(i == j) for i in xrange(n)] for j in xrange(n)]
 
         # Create the vectors x, e and the scalar alpha
-        # Python doesn't have a sgn function, so we use cmp instead
+        # Python doesn't have a sgn function, use cmp
         x = [row[k] for row in R[k:]]
         e = [row[k] for row in I[k:]]
         alpha = -cmp(x[0],0) * norm(x)
 
-        # Using anonymous functions, we create u and v
+        # Using anonymous functions, create u and v
         u = map(lambda p,q: p + alpha * q, x, e)
         norm_u = norm(u)
         v = map(lambda p: p/norm_u, u)
