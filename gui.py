@@ -550,14 +550,20 @@ class App(Frame):
                 # Submit Button
                 submitBtn = Button(qr, text="Submit", command = lambda: self.doQr(A, row, col))
                 submitBtn.pack(fill = "both")
-                rowCount += 1
+                rowCount += 2
 
-                Label(qr, text="QR:", anchor = CENTER).pack(fill = "x")
-                rowCount += 1
-                self.qrTextBox = Text(qr, width=60, height=5)
+                resultFrame = Frame(qr)
+                resultFrame.pack(fill = "x")
+
+                scrollbar = Scrollbar(resultFrame)
+                scrollbar.pack(side=RIGHT, fill=Y)
+
+                self.qrTextBox = Text(resultFrame, width=60, height=(row * 3 ) + 4)
                 self.qrTextBox.pack(fill = "both")
+                self.qrTextBox.config(yscrollcommand = scrollbar.set)
+                scrollbar.config(command = self.qrTextBox.yview)
 
-                Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(fill = "both")
+                Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
 
     def doQr(self, inputA, r, c):
         i = 0
@@ -574,6 +580,18 @@ class App(Frame):
 
         A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
         Q, R = scipy.linalg.qr(A)
+
+        self.qrTextBox.insert(END, "A:\n")
+        for row in ourMatrix:
+            self.qrTextBox.insert(END, str(row) + '\n')
+
+        self.qrTextBox.insert(END, "Q:\n")
+        for row in Q:
+            self.qrTextBox.insert(END, str(row) + '\n')
+
+        self.qrTextBox.insert(END, "R:\n")
+        for row in R:
+            self.qrTextBox.insert(END, str(row) + '\n')
 
         print "A:"
         pprint.pprint(A)
