@@ -21,9 +21,9 @@ Windows version will be compiled to .exe using py2exe, Mac runs Python 2.7 nativ
 
 A. Interpolation
 
- - Chebyshev
- - Splines (cubic)
- - Bezier
+ - Chebyshev -- DONE
+ - Splines (cubic) -- DONE
+ - Bezier -- DONE
 
 B. Least Squares
 
@@ -31,7 +31,7 @@ B. Least Squares
     - Classical Gram-Schmidt
     - Modified Gram-Schmidt
     - Householder Reflectors
-    - QR Factorization
+    - QR Factorization -- DONE
  - Nonlinear
     - Gauss-Newton
     - Levenberg-Marquardt

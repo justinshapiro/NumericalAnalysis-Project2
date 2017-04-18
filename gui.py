@@ -3,12 +3,16 @@
 A. Interpolation
 
     Chebyshev -- DONE
-    Splines (cubic)
+    Splines (cubic) -- DONE
     Bezier -- DONE
 
 B. Least Squares
 
     Linear
+        - Classical Gram-Schmidt
+        - Modified Gram-Schmidt
+        - Householder Reflectors
+        - QR Factorization -- DONE
     Nonlinear
 
 C. Differentiation and Integration
