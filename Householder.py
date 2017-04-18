@@ -81,8 +81,8 @@ def householder(A):
     # take the transpose upon returning it
     return trans_matrix(Q), R
 
-#A = [[12, -51, 4], [6, 167, -68], [-4, 24, -41]]    # only test values
-#Q, R = householder(A)
+A = [[12, -51, 4], [6, 167, -68], [-4, 24, -41]]    # only test values
+Q, R = householder(A)
 
 print "A:"
 pprint(A)
