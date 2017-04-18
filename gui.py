@@ -587,15 +587,6 @@ class App(Frame):
         for row in R:
             self.qrTextBox.insert(END, str(row) + '\n')
 
-        print "A:"
-        pprint.pprint(A)
-
-        print "Q:"
-        pprint.pprint(Q)
-
-        print "R:"          # R must be an upper triangular matrix
-        pprint.pprint(R)
-
     def nonLinearWindow(self):
         print "hi"
 
