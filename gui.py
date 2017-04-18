@@ -29,6 +29,10 @@ import time
 from Tkinter import *
 import tkFont
 from ttk import *
+
+
+import matplotlib
+matplotlib.use("TkAgg")  # for Patricia's TclTk issue, comment out if it causes problems
 from chebyshev import Chebyshev
 import math
 from universal_function import f
@@ -44,7 +48,7 @@ class App(Frame):
         self.root = Tk()
         self.root.s = Style()
         self.root.geometry("420x300")
-        self.root.resizable(0,0)
+        self.root.resizable(1,1)  # made resizable for now, may need to increase geometry
         self.root.s.theme_use("clam")
         self.root.title("Numerical Analysis - Project 2")
 
