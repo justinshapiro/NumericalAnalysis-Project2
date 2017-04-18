@@ -27,6 +27,7 @@ C. Differentiation and Integration
 
 import time
 from Tkinter import *
+import tkFont
 from ttk import *
 from chebyshev import Chebyshev
 import math
@@ -34,6 +35,7 @@ from universal_function import f
 import numpy as np
 import bezier
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 class App(Frame):
     def __init__(self):
@@ -187,8 +189,129 @@ class App(Frame):
     def splinesWindow(self):
         # create window
         self.splines = Toplevel()
-        quitBtn = Button(self.splines, text = "Submit")
-        quitBtn.pack()
+        self.splines.title("Cubic Splines")
+        self.splines.resizable(0, 0)
+        mainFrame = Frame(self.splines)
+        mainFrame.pack()
+        self._font= tkFont.Font(family="Helvetica", size=8)
+        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+
+        prompt1 = "How many data points do you have?: "
+        l = Label(mainFrame, text=prompt1)
+        l.grid(row=0, column=0, sticky=W, padx=0)
+        aSplines = Entry(mainFrame, width=3)
+        aSplines.grid(row=0, column=1, sticky=W, padx=25)
+
+        # "Enter Points" Button
+        epBtn = Button(mainFrame, text="Enter Points", command=lambda: moreSplines(int(aSplines.get())))
+        epBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+        def moreSplines(n):
+            l.destroy()
+            aSplines.destroy()
+            epBtn.destroy()
+
+            nSplines = []
+            i = 0
+            row_count = 0
+            while i < n:
+                nSplines.append(["", ""])
+                # x_i
+                Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
+                nSplines[i][0] = Entry(mainFrame, width=3)
+                nSplines[i][0].grid(row=row_count, column=0, sticky=W, padx=25)
+                # y_i
+                Label(mainFrame, text="y_" + (str(i + 1)) + ": ").grid(row=row_count, column=1, sticky=W, padx=0)
+                nSplines[i][1] = Entry(mainFrame, width=3)
+                nSplines[i][1].grid(row=row_count, column=1, sticky=W, padx=25)
+                row_count += 1
+                i += 1
+
+            _l = Label(mainFrame, text="Spline Equations: ")
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text="Submit", command=lambda: self.doSplines(nSplines))
+            submitBtn.grid(row=row_count, column=0, columnspan=3, pady=10, sticky=W)
+            row_count += 1
+
+            _l.grid(row=row_count, column=0, sticky=W, padx=0)
+            row_count += 1
+            self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
+
+
+    def doSplines(self, nSplines):
+        i = 0
+        all_points = []
+        while i < len(nSplines):
+            all_points.append(["", ""])
+            all_points[i][0] = nSplines[i][0].get()
+            all_points[i][1] = nSplines[i][1].get()
+            i += 1
+
+        # assert that points are sorted by increasing x value
+        all_points = sorted(all_points, key=lambda x: (x[0]))
+
+        x = []
+        i = 0
+        while i < len(all_points):
+            x.append(float(all_points[i][0]))
+            i += 1
+        y = []
+        i = 0
+        while i < len(all_points):
+            y.append(float(all_points[i][1]))
+            i += 1
+
+        x_np = np.array(x)
+        y_np = np.array(y)
+        arr = np.arange(np.amin(x), np.amax(x), 0.01)
+        s = interpolate.CubicSpline(x_np, y_np, bc_type=((2, 0.0), (2, 0.0)))
+
+        s_arr = []
+        i = 0
+        while i < len(s.c) - 1:
+            inner_sign = ""
+            if x[i] < 0:
+                inner_sign = "+ "
+            else:
+                inner_sign = "- "
+            s_str = "S_" + str(i + 1) + "(x) = "
+            s_str += str(s.c[3, i])
+            if float(s.c[2, i]) < 0:
+                s_str += " - "
+            else:
+                s_str += " + "
+            s_str += str(abs(s.c[2, i])) + "(x "
+            s_str += inner_sign + str(x[i]) + ") "
+            if float(s.c[1, i]) < 0:
+                s_str += "- "
+            else:
+                s_str += "+ "
+            s_str += str(abs(s.c[1, i])) + "(x "
+            s_str += inner_sign + str(x[i]) + ")^2 "
+            if float(s.c[0, i]) < 0:
+                s_str += "- "
+            else:
+                s_str += "+ "
+            s_str += str(abs(s.c[0, i])) + "(x "
+            s_str += inner_sign + str(x[i]) + ")^3"
+            s_arr.append(s_str)
+            i += 1
+
+        i = 0
+        spline_eqs = ""
+        while i < len(s_arr):
+            spline_eqs += str(s_arr[i]) + "\n"
+            i += 1
+
+        print(spline_eqs)
+        self.text_box.insert(END, spline_eqs)
+
+        plt.plot(x_np, y_np, 'bo', label='Data Point')
+        plt.plot(arr, s(arr), 'r-', label='Cubic Spline')
+        plt.legend()
+        plt.show()
+
 
     def bezierWindow(self):
         # create window
