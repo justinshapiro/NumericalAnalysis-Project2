@@ -39,9 +39,7 @@ from universal_function import f
 import numpy as np
 import bezier
 import matplotlib.pyplot as plt
-import scipy
-import pprint
-from scipy import interpolate, linalg
+from scipy import interpolate
 
 class App(Frame):
     def __init__(self):
@@ -86,7 +84,7 @@ class App(Frame):
         self.innerLsFrame.grid(padx = 118)
 
         # Least Squares Frame Buttons
-        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27, command = self.linearWindow)
+        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27)
         self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27)
         self.linearBtn.grid(row = 0, column = 0, sticky = W)
         self.nonLinBtn.grid(row = 0, column = 1)
@@ -129,10 +127,6 @@ class App(Frame):
         # Quit
         self.quit = Button(self.bottomFrame, text = "Quit", command = self.quitApp)
         self.quit.pack(fill = 'x')
-
-    #####################
-    ### Interpolation ###
-    #####################
 
     def chebyWindow(self):
         # create Chebyshev window
@@ -322,7 +316,6 @@ class App(Frame):
         plt.legend()
         plt.show()
 
-
     def bezierWindow(self):
         # create window
         self.bezier = Toplevel()
@@ -453,6 +446,7 @@ class App(Frame):
         plt.text(plot_min_x, plot_max_y - 0.25, "Endpoints: " + e1 + " and " + e2, fontdict=in_graph)
         plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
         plt.show()
+
 
     #####################
     ### Least Squares ###
@@ -605,6 +599,8 @@ class App(Frame):
     def nonLinearWindow(self):
         print "hi"
 
+=======
+>>>>>>> 4d65ca292212051be89c80d79e8fd71b139ebefa
     def start(self):
         self.root.mainloop()
 
