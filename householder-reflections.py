@@ -6,7 +6,6 @@ the Householder Reflections method
 
 """
 
-
 from math import sqrt
 from pprint import pprint
 
