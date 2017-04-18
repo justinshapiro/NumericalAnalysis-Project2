@@ -29,17 +29,15 @@ import time
 from Tkinter import *
 import tkFont
 from ttk import *
-
-
-import matplotlib
-matplotlib.use("TkAgg")  # for Patricia's TclTk issue, comment out if it causes problems
 from chebyshev import Chebyshev
 import math
 from universal_function import f
 import numpy as np
 import bezier
 import matplotlib.pyplot as plt
-from scipy import interpolate
+import scipy
+import pprint
+from scipy import interpolate, linalg
 
 class App(Frame):
     def __init__(self):
@@ -84,7 +82,7 @@ class App(Frame):
         self.innerLsFrame.grid(padx = 118)
         
         # Least Squares Frame Buttons
-        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27)
+        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27, command = self.linearWindow)
         self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27)
         self.linearBtn.grid(row = 0, column = 0, sticky = W)
         self.nonLinBtn.grid(row = 0, column = 1)
@@ -127,6 +125,10 @@ class App(Frame):
         # Quit
         self.quit = Button(self.bottomFrame, text = "Quit", command = self.quitApp)
         self.quit.pack(fill = 'x')
+
+    #####################
+    ### Interpolation ###
+    #####################
 
     def chebyWindow(self):
         # create Chebyshev window
@@ -242,7 +244,6 @@ class App(Frame):
             row_count += 1
             self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
 
-
     def doSplines(self, nSplines):
         i = 0
         all_points = []
@@ -315,7 +316,6 @@ class App(Frame):
         plt.plot(arr, s(arr), 'r-', label='Cubic Spline')
         plt.legend()
         plt.show()
-
 
     def bezierWindow(self):
         # create window
@@ -447,6 +447,139 @@ class App(Frame):
         plt.text(plot_min_x, plot_max_y - 0.25, "Endpoints: " + e1 + " and " + e2, fontdict=in_graph)
         plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
         plt.show()
+
+    #####################
+    ### Least Squares ###
+    #####################
+
+    def linearWindow(self):
+        # create window
+        linear = Toplevel(self)
+        linear.title("Linear Least Squares")
+        linear.resizable(0, 0)
+        mainFrame = Frame(linear)
+        mainFrame.pack()
+
+        Button(mainFrame, text="Classical Gram-Schmidt", command=lambda: cGramSchmidtWindow()).pack(fill=X)
+        Button(mainFrame, text="Modified Gram-Schmidt", command=lambda: modifiedGSWindow()).pack(fill=X)
+        Button(mainFrame, text="Householder Reflectors", command=lambda: householderWindow()).pack(fill=X)
+        Button(mainFrame, text="QR Factorization", command=lambda: qrWindow()).pack(fill=X)
+        Button(mainFrame, text="Exit Window", command=lambda: linear.destroy()).pack(fill=X)
+
+        def cGramSchmidtWindow():
+            # create window
+            classical = Toplevel()
+            classical.title("Classical Gram-Schmidt")
+            mainFrame = Frame(classical)
+            mainFrame.pack(fill="both")
+
+            Button(mainFrame, text="Exit Window", command=lambda: classical.destroy()).pack(fill=X)
+
+        def modifiedGSWindow():
+            # create window
+            modified = Toplevel()
+            modified.title("Modified Gram-Schmidt")
+            modified.resizable(0, 0)
+            mainFrame = Frame(modified)
+            mainFrame.pack()
+
+            Button(mainFrame, text="Exit Window", command=lambda: modified.destroy()).pack(fill=X)
+
+        def householderWindow():
+            # create window
+            householder = Toplevel()
+            householder.title("Householder Reflectors")
+            householder.resizable(0, 0)
+            mainFrame = Frame(householder)
+            mainFrame.pack()
+
+            Button(mainFrame, text="Exit Window", command=lambda: householder.destroy()).pack(fill=X)
+
+        def qrWindow():
+            # create window
+            qr = Toplevel()
+            qr.title("QR Factorization")
+            mainFrame = Frame(qr)
+            mainFrame.pack(fill="both")
+
+            l = Label(mainFrame, text="Enter size of matrix A? (n x m)")
+            l.grid(row=0, column=0, sticky=W, padx=0)
+            rowA = Entry(mainFrame, width=4)
+            rowA.grid(row=0, column=1, sticky=W, padx=10)
+            l2 = Label(mainFrame, text="x")
+            l2.grid(row=0, column=2, sticky=W)
+            colA = Entry(mainFrame, width=4)
+            colA.grid(row=0, column=3, sticky=W, padx=15)
+
+            # "Submit" Button
+            sBtn = Button(mainFrame, text="Submit", command=lambda: continueQr(int(rowA.get()), int(colA.get())))
+            sBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+            def continueQr(row, col):
+                l.destroy()
+                l2.destroy()
+                rowA.destroy()
+                colA.destroy()
+                sBtn.destroy()
+
+                A = []
+                i = 0
+                rowCount = 1
+
+                Label(mainFrame, text="A =").grid(row=0, column=0, sticky=W)
+                # 3 x 3
+                while i < row:
+                    A.append([""] * col)
+                    j = 0
+
+                    # Print each row entry
+                    while j < col:
+                        A[i][j] = Entry(mainFrame, width=3)
+                        A[i][j].grid(row=rowCount, column=j, sticky=W, padx=5)
+                        j += 1
+
+                    i += 1
+                    rowCount += 1
+
+                # Submit Button
+                submitBtn = Button(qr, text="Submit", command=lambda: self.doQr(A, row, col))
+                submitBtn.pack(fill="both")
+                rowCount += 1
+
+                Label(qr, text="QR:", anchor=CENTER).pack(fill="x")
+                rowCount += 1
+                self.qrTextBox = Text(qr, width=60, height=5)
+                self.qrTextBox.pack(fill="both")
+
+                Button(qr, text="Exit Window", command=lambda: qr.destroy()).pack(fill="both")
+
+    def doQr(self, inputA, r, c):
+        i = 0
+        ourMatrix = []
+        while i < len(inputA):
+            ourMatrix.append([""] * c)
+            j = 0
+
+            while j < c:
+                ourMatrix[i][j] = inputA[i][j].get()
+                j += 1
+
+            i += 1
+
+        A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+        Q, R = scipy.linalg.qr(A)
+
+        print "A:"
+        pprint.pprint(A)
+
+        print "Q:"
+        pprint.pprint(Q)
+
+        print "R:"  # R must be an upper triangular matrix
+        pprint.pprint(R)
+
+    def nonLinearWindow(self):
+        print "hi"
 
     def start(self):
         self.root.mainloop()
