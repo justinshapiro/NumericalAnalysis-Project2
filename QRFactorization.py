@@ -24,7 +24,7 @@ pprint.pprint(A)
 print "Q:"
 pprint.pprint(Q)
 
-print "R:"          # R must be an upper triangular matrix
+#print "R:"          # R must be an upper triangular matrix
 pprint.pprint(R)
 
    
