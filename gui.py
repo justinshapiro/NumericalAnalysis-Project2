@@ -14,6 +14,8 @@ B. Least Squares
         - Householder Reflectors
         - QR Factorization -- DONE
     Nonlinear
+        - Gauss-Newton
+        - Levenberg-Marquardt
 
 C. Differentiation and Integration
 
