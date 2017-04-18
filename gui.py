@@ -29,17 +29,15 @@ import time
 from Tkinter import *
 import tkFont
 from ttk import *
-
-
-import matplotlib
-matplotlib.use("TkAgg")  # for Patricia's TclTk issue, comment out if it causes problems
 from chebyshev import Chebyshev
 import math
 from universal_function import f
 import numpy as np
 import bezier
 import matplotlib.pyplot as plt
-from scipy import interpolate
+import scipy
+import pprint
+from scipy import interpolate, linalg
 
 class App(Frame):
     def __init__(self):
@@ -84,7 +82,7 @@ class App(Frame):
         self.innerLsFrame.grid(padx = 118)
 
         # Least Squares Frame Buttons
-        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27)
+        self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27, command = self.linearWindow)
         self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27)
         self.linearBtn.grid(row = 0, column = 0, sticky = W)
         self.nonLinBtn.grid(row = 0, column = 1)
@@ -127,6 +125,10 @@ class App(Frame):
         # Quit
         self.quit = Button(self.bottomFrame, text = "Quit", command = self.quitApp)
         self.quit.pack(fill = 'x')
+
+    #####################
+    ### Interpolation ###
+    #####################
 
     def chebyWindow(self):
         # create Chebyshev window
@@ -241,7 +243,6 @@ class App(Frame):
             _l.grid(row=row_count, column=0, sticky=W, padx=0)
             row_count += 1
             self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
-
 
     def doSplines(self, nSplines):
         i = 0
@@ -447,7 +448,6 @@ class App(Frame):
         plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
         plt.show()
 
-
     #####################
     ### Least Squares ###
     #####################
@@ -599,8 +599,6 @@ class App(Frame):
     def nonLinearWindow(self):
         print "hi"
 
-=======
->>>>>>> 4d65ca292212051be89c80d79e8fd71b139ebefa
     def start(self):
         self.root.mainloop()
 
