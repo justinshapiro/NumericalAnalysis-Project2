@@ -1,8 +1,4 @@
-# linear least squares
-
-import numpy.linalg
-import math
-
+#linear least squares
 
 def lstsq(a, b, rcond=-1):
     """
@@ -22,6 +18,7 @@ def lstsq(a, b, rcond=-1):
     >>> plt.show()
 
     """
+    import math
     a, _ = _makearray(a)
     b, wrap = _makearray(b)
     is_1d = len(b.shape) == 1

@@ -31,6 +31,8 @@ C. Differentiation and Integration
 
 '''
 
+import matplotlib
+matplotlib.use("TkAgg")
 from Householder import Householder
 import time
 from Tkinter import *
