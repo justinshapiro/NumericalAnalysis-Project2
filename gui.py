@@ -31,7 +31,7 @@ C. Differentiation and Integration
 
 '''
 
-import Householder as h
+from Householder import Householder
 import time
 from Tkinter import *
 import tkFont
@@ -568,8 +568,8 @@ class App(Frame):
             i += 1
 
         A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-        house = h()
-        Q, R = house.householder(A)
+        h = Householder()
+        Q, R = Householder.householder(A)
 
         self.householderTextBox.insert(END, "A:\n")
         for row in np.matrix(ourMatrix):
