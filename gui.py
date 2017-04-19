@@ -31,6 +31,7 @@ C. Differentiation and Integration
 
 '''
 
+import Householder as h
 import time
 from Tkinter import *
 import tkFont
@@ -42,8 +43,6 @@ import numpy as np
 import bezier
 import matplotlib.pyplot as plt
 import scipy
-import pprint
-from scipy import interpolate, linalg
 
 class App(Frame):
     def __init__(self):
@@ -492,14 +491,97 @@ class App(Frame):
             Button(mainFrame, text = "Exit Window", command = lambda: modified.destroy()).pack(fill = X)
 
         def householderWindow():
-            #create window
+            # create window
             householder = Toplevel()
-            householder.title("Householder Reflectors")
-            householder.resizable(0,0)
+            householder.title("Householder")
             mainFrame = Frame(householder)
-            mainFrame.pack()
+            mainFrame.pack(fill="both")
 
-            Button(mainFrame, text = "Exit Window", command = lambda: householder.destroy()).pack(fill = X)
+            l = Label(mainFrame, text="Enter size of matrix A? (n x m)")
+            l.grid(row=0, column=0, sticky=W, padx=0)
+            rowA = Entry(mainFrame, width=4)
+            rowA.grid(row=0, column=1, sticky=W, padx=10)
+            l2 = Label(mainFrame, text="x")
+            l2.grid(row=0, column=2, sticky=W)
+            colA = Entry(mainFrame, width=4)
+            colA.grid(row=0, column=3, sticky=W, padx=15)
+
+            # "Submit" Button
+            sBtn = Button(mainFrame, text="Submit", command=lambda: continueHouseholder(int(rowA.get()), int(colA.get())))
+            sBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+            def continueHouseholder(row, col):
+                l.destroy()
+                l2.destroy()
+                rowA.destroy()
+                colA.destroy()
+                sBtn.destroy()
+
+                A = []
+                i = 0
+                rowCount = 1
+
+                Label(mainFrame, text = "A =").grid(row = 0, column = 0, sticky = W)
+                # 3 x 3
+                while i < row:
+                    A.append([""] * col)
+                    j = 0
+
+                    # Print each row entry
+                    while j < col:
+                        A[i][j] = Entry(mainFrame, width = 3)
+                        A[i][j].grid(row = rowCount, column = j, sticky = W, padx = 5)
+                        j += 1
+
+                    i += 1
+                    rowCount += 1
+
+                # Submit Button
+                submitBtn = Button(householder, text="Submit", command=lambda: self.doHouseholder(A, row, col))
+                submitBtn.pack(fill = "both")
+                rowCount += 2
+
+                resultFrame = Frame(householder)
+                resultFrame.pack(fill = "x")
+
+                scrollbar = Scrollbar(resultFrame)
+                scrollbar.pack(side=RIGHT, fill=Y)
+
+                self.qrTextBox = Text(resultFrame)
+                self.qrTextBox.pack(fill = "both")
+                self.qrTextBox.config(yscrollcommand = scrollbar.set)
+                scrollbar.config(command = self.qrTextBox.yview)
+
+                Button(householder, text = "Exit Window", command = lambda: householder.destroy()).pack(side = BOTTOM, fill = "both")
+
+    def doHouseholder(self, inputA, r, c):
+        i = 0
+        ourMatrix = []
+        while i < len(inputA):
+            ourMatrix.append([""] * c)
+            j = 0
+
+            while j < c:
+                ourMatrix[i][j] = inputA[i][j].get()
+                j += 1
+
+            i += 1
+
+        A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+        house = h()
+        Q, R = house.householder(A)
+
+        self.householderTextBox.insert(END, "A:\n")
+        for row in np.matrix(ourMatrix):
+            self.householderTextBox.insert(END, str(row) + '\n')
+
+        self.householderTextBox.insert(END, "Q:\n")
+        for row in Q:
+            self.householderTextBox.insert(END, str(row) + '\n')
+
+        self.householderTextBox.insert(END, "R:\n")
+        for row in R:
+            self.householderTextBox.insert(END, str(row) + '\n')
 
         def qrWindow():
             #create window
