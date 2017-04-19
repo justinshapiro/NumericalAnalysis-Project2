@@ -537,7 +537,7 @@ class App(Frame):
                     rowCount += 1
 
                 # Submit Button
-                submitBtn = Button(householder, text="Submit", command=lambda: self.doHouseholder(A, row, col))
+                submitBtn = Button(householder, text="Submit", command=lambda: doHouseholder(A, row, col))
                 submitBtn.pack(fill = "both")
                 rowCount += 2
 
@@ -547,41 +547,41 @@ class App(Frame):
                 scrollbar = Scrollbar(resultFrame)
                 scrollbar.pack(side=RIGHT, fill=Y)
 
-                self.qrTextBox = Text(resultFrame)
-                self.qrTextBox.pack(fill = "both")
-                self.qrTextBox.config(yscrollcommand = scrollbar.set)
-                scrollbar.config(command = self.qrTextBox.yview)
+                self.householderTextBox = Text(resultFrame)
+                self.householderTextBox.pack(fill = "both")
+                self.householderTextBox.config(yscrollcommand = scrollbar.set)
+                scrollbar.config(command = self.householderTextBox.yview)
 
                 Button(householder, text = "Exit Window", command = lambda: householder.destroy()).pack(side = BOTTOM, fill = "both")
 
-    def doHouseholder(self, inputA, r, c):
-        i = 0
-        ourMatrix = []
-        while i < len(inputA):
-            ourMatrix.append([""] * c)
-            j = 0
+        def doHouseholder(inputA, r, c):
+            i = 0
+            ourMatrix = []
+            while i < len(inputA):
+                ourMatrix.append([""] * c)
+                j = 0
 
-            while j < c:
-                ourMatrix[i][j] = inputA[i][j].get()
-                j += 1
+                while j < c:
+                    ourMatrix[i][j] = float(inputA[i][j].get())
+                    j += 1
 
-            i += 1
+                i += 1
 
-        A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-        h = Householder()
-        Q, R = h.householder(A)
+            A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+            h = Householder()
+            Q, R = h.householder(A)
 
-        self.householderTextBox.insert(END, "A:\n")
-        for row in np.matrix(ourMatrix):
-            self.householderTextBox.insert(END, str(row) + '\n')
+            self.householderTextBox.insert(END, "A:\n")
+            for row in np.matrix(ourMatrix):
+                self.householderTextBox.insert(END, str(row) + '\n')
 
-        self.householderTextBox.insert(END, "Q:\n")
-        for row in Q:
-            self.householderTextBox.insert(END, str(row) + '\n')
+            self.householderTextBox.insert(END, "Q:\n")
+            for row in Q:
+                self.householderTextBox.insert(END, str(row) + '\n')
 
-        self.householderTextBox.insert(END, "R:\n")
-        for row in R:
-            self.householderTextBox.insert(END, str(row) + '\n')
+            self.householderTextBox.insert(END, "R:\n")
+            for row in R:
+                self.householderTextBox.insert(END, str(row) + '\n')
 
         def qrWindow():
             #create window
@@ -630,7 +630,7 @@ class App(Frame):
                     rowCount += 1
 
                 # Submit Button
-                submitBtn = Button(qr, text="Submit", command = lambda: self.doQr(A, row, col))
+                submitBtn = Button(qr, text="Submit", command = lambda: doQr(A, row, col))
                 submitBtn.pack(fill = "both")
                 rowCount += 2
 
@@ -647,33 +647,33 @@ class App(Frame):
 
                 Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
 
-    def doQr(self, inputA, r, c):
-        i = 0
-        ourMatrix = []
-        while i < len(inputA):
-            ourMatrix.append([""] * c)
-            j = 0
+        def doQr(inputA, r, c):
+            i = 0
+            ourMatrix = []
+            while i < len(inputA):
+                ourMatrix.append([""] * c)
+                j = 0
 
-            while j < c:
-                ourMatrix[i][j] = inputA[i][j].get()
-                j += 1
+                while j < c:
+                    ourMatrix[i][j] = inputA[i][j].get()
+                    j += 1
 
-            i += 1
+                i += 1
 
-        A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-        Q, R = scipy.linalg.qr(A)
+            A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+            Q, R = scipy.linalg.qr(A)
 
-        self.qrTextBox.insert(END, "A:\n")
-        for row in np.matrix(ourMatrix):
-            self.qrTextBox.insert(END, str(row) + '\n')
+            self.qrTextBox.insert(END, "A:\n")
+            for row in np.matrix(ourMatrix):
+                self.qrTextBox.insert(END, str(row) + '\n')
 
-        self.qrTextBox.insert(END, "Q:\n")
-        for row in Q:
-            self.qrTextBox.insert(END, str(row) + '\n')
+            self.qrTextBox.insert(END, "Q:\n")
+            for row in Q:
+                self.qrTextBox.insert(END, str(row) + '\n')
 
-        self.qrTextBox.insert(END, "R:\n")
-        for row in R:
-            self.qrTextBox.insert(END, str(row) + '\n')
+            self.qrTextBox.insert(END, "R:\n")
+            for row in R:
+                self.qrTextBox.insert(END, str(row) + '\n')
 
     def nonLinearWindow(self):
         print "hi"
