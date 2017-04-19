@@ -569,7 +569,7 @@ class App(Frame):
 
         A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
         h = Householder()
-        Q, R = Householder.householder(A)
+        Q, R = h.householder(A)
 
         self.householderTextBox.insert(END, "A:\n")
         for row in np.matrix(ourMatrix):
