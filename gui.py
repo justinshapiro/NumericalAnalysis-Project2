@@ -43,6 +43,7 @@ import numpy as np
 import bezier
 import matplotlib.pyplot as plt
 import scipy
+from scipy import interpolate, linalg
 
 class App(Frame):
     def __init__(self):
@@ -554,34 +555,34 @@ class App(Frame):
 
                 Button(householder, text = "Exit Window", command = lambda: householder.destroy()).pack(side = BOTTOM, fill = "both")
 
-        def doHouseholder(inputA, r, c):
-            i = 0
-            ourMatrix = []
-            while i < len(inputA):
-                ourMatrix.append([""] * c)
-                j = 0
+                def doHouseholder(inputA, r, c):
+                    i = 0
+                    ourMatrix = []
+                    while i < len(inputA):
+                        ourMatrix.append([""] * c)
+                        j = 0
 
-                while j < c:
-                    ourMatrix[i][j] = float(inputA[i][j].get())
-                    j += 1
+                        while j < c:
+                            ourMatrix[i][j] = float(inputA[i][j].get())
+                            j += 1
 
-                i += 1
+                        i += 1
 
-            A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-            h = Householder()
-            Q, R = h.householder(A)
+                    A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+                    h = Householder()
+                    Q, R = h.householder(A)
 
-            self.householderTextBox.insert(END, "A:\n")
-            for row in np.matrix(ourMatrix):
-                self.householderTextBox.insert(END, str(row) + '\n')
+                    self.householderTextBox.insert(END, "A:\n")
+                    for row in np.matrix(ourMatrix):
+                        self.householderTextBox.insert(END, str(row) + '\n')
 
-            self.householderTextBox.insert(END, "Q:\n")
-            for row in Q:
-                self.householderTextBox.insert(END, str(row) + '\n')
+                    self.householderTextBox.insert(END, "Q:\n")
+                    for row in Q:
+                        self.householderTextBox.insert(END, str(row) + '\n')
 
-            self.householderTextBox.insert(END, "R:\n")
-            for row in R:
-                self.householderTextBox.insert(END, str(row) + '\n')
+                    self.householderTextBox.insert(END, "R:\n")
+                    for row in R:
+                        self.householderTextBox.insert(END, str(row) + '\n')
 
         def qrWindow():
             #create window
@@ -647,33 +648,33 @@ class App(Frame):
 
                 Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
 
-        def doQr(inputA, r, c):
-            i = 0
-            ourMatrix = []
-            while i < len(inputA):
-                ourMatrix.append([""] * c)
-                j = 0
+                def doQr(inputA, r, c):
+                    i = 0
+                    ourMatrix = []
+                    while i < len(inputA):
+                        ourMatrix.append([""] * c)
+                        j = 0
 
-                while j < c:
-                    ourMatrix[i][j] = inputA[i][j].get()
-                    j += 1
+                        while j < c:
+                            ourMatrix[i][j] = inputA[i][j].get()
+                            j += 1
 
-                i += 1
+                        i += 1
 
-            A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-            Q, R = scipy.linalg.qr(A)
+                    A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+                    Q, R = scipy.linalg.qr(A)
 
-            self.qrTextBox.insert(END, "A:\n")
-            for row in np.matrix(ourMatrix):
-                self.qrTextBox.insert(END, str(row) + '\n')
+                    self.qrTextBox.insert(END, "A:\n")
+                    for row in np.matrix(ourMatrix):
+                        self.qrTextBox.insert(END, str(row) + '\n')
 
-            self.qrTextBox.insert(END, "Q:\n")
-            for row in Q:
-                self.qrTextBox.insert(END, str(row) + '\n')
+                    self.qrTextBox.insert(END, "Q:\n")
+                    for row in Q:
+                        self.qrTextBox.insert(END, str(row) + '\n')
 
-            self.qrTextBox.insert(END, "R:\n")
-            for row in R:
-                self.qrTextBox.insert(END, str(row) + '\n')
+                    self.qrTextBox.insert(END, "R:\n")
+                    for row in R:
+                        self.qrTextBox.insert(END, str(row) + '\n')
 
     def nonLinearWindow(self):
         print "hi"
