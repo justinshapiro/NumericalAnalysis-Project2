@@ -522,7 +522,7 @@ class App(Frame):
                 Label(mainFrame, text="A =").grid(row=0, column=0, sticky=W)
                 while i < row_A:
                     A.append([""] * col_A)
-                    j = 1
+                    j = 0
 
                     # Print each row entry
                     while j < col_A:
@@ -546,7 +546,7 @@ class App(Frame):
                     B[i].grid(row=rowCount, column=k, sticky=W, padx=5)
 
                     i += 1
-                    k += 1
+                    #k += 1
                     rowCount += 1
 
                 # Submit Button
@@ -564,7 +564,7 @@ class App(Frame):
                 self.lsTextBox.config(yscrollcommand=scrollbar.set)
                 scrollbar.config(command=self.lsTextBox.yview)
 
-                Button(mainFrame, text="Exit Window", command=lambda: ls.destroy()).pack(fill=X)
+                Button(ls, text="Exit Window", command=lambda: ls.destroy()).pack(fill=X)
 
                 def doLeastSquares(A, B, col):
                     i = 0
