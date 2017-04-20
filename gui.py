@@ -550,7 +550,7 @@ class App(Frame):
                     rowCount += 1
 
                 # Submit Button
-                submitBtn = Button(ls, text="Submit", command=lambda: doLeastSquares(A, B, row_A, col_A))
+                submitBtn = Button(ls, text="Submit", command=lambda: doLeastSquares(A, B, col_A))
                 submitBtn.pack(fill="both")
 
                 resultFrame = Frame(ls)
@@ -566,7 +566,7 @@ class App(Frame):
 
                 Button(mainFrame, text="Exit Window", command=lambda: ls.destroy()).pack(fill=X)
 
-                def doLeastSquares(A, B, row, col):
+                def doLeastSquares(A, B, col):
                     i = 0
                     matrix_A = []
                     while i < len(A):
@@ -584,8 +584,8 @@ class App(Frame):
                         matrix_B[i] = B[i].get()
                         i += 1
 
-                    X = np.linalg.lstsq(matrix_A, B)
-                    residual = B - np.matmul(matrix_A, X[0])
+                    X = np.linalg.lstsq(matrix_A, matrix_B)
+                    residual = matrix_B - np.matmul(matrix_A, X[0])
                     inner_square = 0
                     for r in residual:
                         inner_square += float(r)**2
