@@ -573,7 +573,7 @@ class App(Frame):
                         matrix_A.append([""] * col)
                         j = 0
                         while j < col:
-                            matrix_A[i][j] = A[i][j].get()
+                            matrix_A[i][j] = float(A[i][j].get())
                             j += 1
                         i += 1
 
@@ -581,7 +581,7 @@ class App(Frame):
                     matrix_B = []
                     while i < len(B):
                         matrix_B.append([""])
-                        matrix_B[i] = B[i].get()
+                        matrix_B[i] = float(B[i].get())
                         i += 1
 
                     X = np.linalg.lstsq(matrix_A, matrix_B)
@@ -591,9 +591,8 @@ class App(Frame):
                         inner_square += float(r)**2
                     rmse = math.sqrt(inner_square / len(residual))
 
-                    self.lsTextBox.insert(END, "X:\n")
-                    for row in X[0]:
-                        self.lsTextBox.insert(END, str(row) + '\n')
+                    self.lsTextBox.insert(END, "X: ")
+                    self.lsTextBox.insert(END, str(X[0]) + '^T\n')
                     self.lsTextBox.insert(END, "RMSE: " + str(rmse))
 
 
