@@ -536,7 +536,6 @@ class App(Frame):
                 B = []
                 i = 0
                 k = j + 1
-                print(k)
                 rowCount = 1
 
                 Label(mainFrame, text="B =").grid(row=0, column=k, sticky=W)
@@ -551,7 +550,7 @@ class App(Frame):
                     rowCount += 1
 
                 # Submit Button
-                submitBtn = Button(ls, text="Submit", command=lambda: doLeastSquares(A, B))
+                submitBtn = Button(ls, text="Submit", command=lambda: doLeastSquares(A, B, row_A, col_A))
                 submitBtn.pack(fill="both")
 
                 resultFrame = Frame(ls)
@@ -565,24 +564,41 @@ class App(Frame):
                 self.lsTextBox.config(yscrollcommand=scrollbar.set)
                 scrollbar.config(command=self.lsTextBox.yview)
 
-                def doLeastSquares(A, B):
-                    X = np.linalg.lstsq(A, B)
-                    residual = B - np.matmul(A, X[0])
+                Button(mainFrame, text="Exit Window", command=lambda: ls.destroy()).pack(fill=X)
+
+                def doLeastSquares(A, B, row, col):
+                    i = 0
+                    matrix_A = []
+                    while i < len(A):
+                        matrix_A.append([""] * col)
+                        j = 0
+                        while j < col:
+                            matrix_A[i][j] = A[i][j].get()
+                            j += 1
+                        i += 1
+
+                    i = 0
+                    matrix_B = []
+                    while i < len(B):
+                        matrix_B.append([""])
+                        matrix_B[i] = B[i].get()
+                        i += 1
+
+                    X = np.linalg.lstsq(matrix_A, B)
+                    residual = B - np.matmul(matrix_A, X[0])
                     inner_square = 0
                     for r in residual:
-                        inner_square += float(r) ** 2
+                        inner_square += float(r)**2
                     rmse = math.sqrt(inner_square / len(residual))
 
                     self.lsTextBox.insert(END, "X:\n")
                     for row in X[0]:
                         self.lsTextBox.insert(END, str(row) + '\n')
-
                     self.lsTextBox.insert(END, "RMSE: " + str(rmse))
 
-                Button(mainFrame, text = "Exit Window", command = lambda: ls.destroy()).pack(fill = X)
 
         def qrWindow():
-            #create window
+            # create window
             qr = Toplevel()
             qr.title("QR Factorization via Gram-Schmidt")
             mainFrame = Frame(qr)
