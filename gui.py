@@ -644,7 +644,7 @@ class App(Frame):
                     rowCount += 1
 
                 # Submit Button
-                submitBtn = Button(qr, text="Submit", command = lambda: doQr(A, row, col))
+                submitBtn = Button(qr, text="Submit", command = lambda: doQr(A, col))
                 submitBtn.pack(fill = "both")
                 rowCount += 2
 
@@ -661,7 +661,7 @@ class App(Frame):
 
                 Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
 
-                def doQr(inputA, r, c):
+                def doQr(inputA, c):
                     i = 0
                     ourMatrix = []
                     while i < len(inputA):
@@ -671,7 +671,6 @@ class App(Frame):
                         while j < c:
                             ourMatrix[i][j] = inputA[i][j].get()
                             j += 1
-
                         i += 1
 
                     A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
