@@ -1,47 +1,69 @@
-# Gauss-Newton algorithm for solving nonlinear least squares problem
-
-import scipy
+from universal_function import f
 import numpy as np
-from numpy.linalg import inv
 import math
-import scipy.misc
+import matplotlib.pyplot as plt
 
-#TEST VALUES
-S = [0.038,0.194,0.425,0.626,1.253,2.500,3.740]
-rate = [0.050,0.127,0.094,0.2122,0.2729,0.2665,0.3317]
-iterations = 5       # taking the number of  iterations as 5
-rows = 7             # taking the number of rows as 7
-columns = 2          # taking the number of columns as 2
+solutions = []
+rmse = []
 
-# This is the original guess
-B = np.matrix([[.9],[.2]])
-print B      # printing original guess B
+vk = [[0], [0]] # initial is set here
+x = [0, 1, 0]
+y = [1, 1, -1]
+radii = [1, 1, 1]
 
-jf = np.zeros((rows,columns))  # Jacobian matrix from below r
-r = np.zeros((rows,1))         # for r equations
+iterations = 3
 
-def model(Vmax,Km,Sval):
-   return ((Vmax*Sval)/(Km+Sval))
+base_str_x = "(x _xi) / sqrt((x xi)^2 + (y yi)^2)"
+base_str_y = "(y _yi) / sqrt((x xi)^2 + (y yi)^2)"
+base_str_rk = "sqrt((x xi)^2 + (y yi)^2) Ri K"
 
-#defines partial derivation for B2 and xi
-def partialDerivativeB1(B2,xi):
-   return round(-(xi/(B2+xi)),10)
 
-# defines partial derivation for B1 and B2 and xi
-def partialDerivativeB2(B1,B2,xi):
-   return round(((B1*xi)/((B2+xi)*(B2+xi))),10)
+it = 0
+while it < iterations:
+    i = 0
+    A = []
+    while i < len(x):
+        A.append(["", ""])
+        A0_str = base_str_x.replace(" xi", "%+f" % (x[i]))
+        A0_str = A0_str.replace(" yi", "%+f" % (y[i]))
+        A0_str = A0_str.replace("_xi", "%+f" % (x[i] * -1))
+        A[i][0] = float(f(vk[0][0], A0_str, vk[1][0]))
+        A1_str = base_str_y.replace(" xi", "%+f" % (x[i]))
+        A1_str = A1_str.replace(" yi", "%+f" % (y[i]))
+        A1_str = A1_str.replace("_yi", "%+f" % (y[i] * -1))
+        A[i][1] = float(f(vk[0][0], A1_str, vk[1][0]))
+        i += 1
 
-def residual(x,y,B1,B2):
-   return (y - (B1*x)/(B2+x))
+    i = 0
+    rk = []
+    while i < len(x):
+        rk.append([""])
+        r0_str = base_str_rk.replace(" xi", "%+f" % (x[i]))
+        r0_str = r0_str.replace(" yi", "%+f" % (y[i]))
+        r0_str = r0_str.replace("Ri", "%+f" % (radii[i] * -1))
+        rk[i][0] = float(f(vk[0][0], r0_str, vk[1][0]))
+        i += 1
 
-for i in xrange(iterations):
-   sumofResid = 0
-   # calculate Jr and r for iteration
-   for j in xrange(rows):
-    r[j,0] = residual(S[j],rate[j],B[0],B[1])
-    sumofResid += (r[j,0]*r[j,0])
-    jf[j,0] = partialDerivativeB1(B[1],S[j])
-    jf[j,1] = partialDerivativeB2(B[0],B[1],S[j])
-   jft = jf.T
-   B -= np.dot(np.dot(inv(np.dot(jft,jf)),jft),r)
-   print B
+    lhs = np.matmul(map(list, zip(*A)), A)
+    rhs = -np.matmul(map(list, zip(*A)), rk)
+    vk = np.matmul(np.linalg.inv(lhs), rhs)
+    solutions.append(vk)
+    print(vk)
+    inner_square = 0
+    for r in rk:
+        inner_square += float(r[0]) ** 2
+    rmse.append(math.sqrt(inner_square / len(rk)))
+    print(rmse)
+    it += 1
+
+graph_x = []
+i = 0
+while i < iterations:
+    graph_x.append(i + 1)
+    i += 1
+
+plt.plot(graph_x, rmse)
+plt.xlabel("Iterations")
+plt.ylabel("RMSE")
+plt.title("RMSE over Iterations")
+plt.show()

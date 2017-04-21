@@ -1,9 +1,12 @@
 import math
 
 
-def f(x, _str):
+def f(x, _str, y="null"):
+    print "Attempt to evaluate: " + _str + " with x = " + str(x),
     # convert x to float as required
     x = float(x)
+    if y != "null":
+        y = float(y)
 
     # not capital letters in function
     _str = _str.lower()
@@ -25,6 +28,7 @@ def f(x, _str):
     _str = _str.replace('^', "**")
 
     # convert trig and log functions to their Pythonic values
+    _str = _str.replace("sqrt", "math.sqrt")
     _str = _str.replace("sin", "math.sin")
     _str = _str.replace("asin", "math.asin")
     _str = _str.replace("sin**-1", "math.asin")
@@ -72,6 +76,7 @@ def f(x, _str):
     result = ""
     try:
         result = eval(_str)
+        print(": result is " + str(result))
     except (TypeError, SyntaxError, NameError):
         print("Error: Incorrect syntax, please see manual for proper syntax.")
         result = "err"
