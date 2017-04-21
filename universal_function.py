@@ -1,15 +1,18 @@
 import math
+import numpy as np
 
 
 def f(x, _str, y="null"):
-    print "Attempt to evaluate: " + _str + " with x = " + str(x),
     # convert x to float as required
     x = float(x)
     if y != "null":
         y = float(y)
 
-    # not capital letters in function
+    # no capital letters in function
     _str = _str.lower()
+
+    # no spaces
+    _str = _str.replace(' ', "")
 
     # convert expressions of the form a^b to a**(b)
     i = 0
@@ -62,7 +65,6 @@ def f(x, _str, y="null"):
                     paren_stack -= 1
                 idx -= 1
         _str = _str.replace('!', "")
-        print(idx)
         _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
 
     # convert multiplication of the form ax to a*x
@@ -75,8 +77,7 @@ def f(x, _str, y="null"):
 
     result = ""
     try:
-        result = eval(_str)
-        print(": result is " + str(result))
+        result = float(eval(_str))
     except (TypeError, SyntaxError, NameError):
         print("Error: Incorrect syntax, please see manual for proper syntax.")
         result = "err"
