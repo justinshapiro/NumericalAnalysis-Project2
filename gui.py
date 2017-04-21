@@ -546,7 +546,6 @@ class App(Frame):
                     B[i].grid(row=rowCount, column=k, sticky=W, padx=5)
 
                     i += 1
-                    #k += 1
                     rowCount += 1
 
                 # Submit Button

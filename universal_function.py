@@ -1,12 +1,18 @@
 import math
+import numpy as np
 
 
-def f(x, _str):
+def f(x, _str, y="null"):
     # convert x to float as required
     x = float(x)
+    if y != "null":
+        y = float(y)
 
-    # not capital letters in function
+    # no capital letters in function
     _str = _str.lower()
+
+    # no spaces
+    _str = _str.replace(' ', "")
 
     # convert expressions of the form a^b to a**(b)
     i = 0
@@ -25,6 +31,7 @@ def f(x, _str):
     _str = _str.replace('^', "**")
 
     # convert trig and log functions to their Pythonic values
+    _str = _str.replace("sqrt", "math.sqrt")
     _str = _str.replace("sin", "math.sin")
     _str = _str.replace("asin", "math.asin")
     _str = _str.replace("sin**-1", "math.asin")
@@ -58,7 +65,6 @@ def f(x, _str):
                     paren_stack -= 1
                 idx -= 1
         _str = _str.replace('!', "")
-        print(idx)
         _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
 
     # convert multiplication of the form ax to a*x
@@ -71,7 +77,7 @@ def f(x, _str):
 
     result = ""
     try:
-        result = eval(_str)
+        result = float(eval(_str))
     except (TypeError, SyntaxError, NameError):
         print("Error: Incorrect syntax, please see manual for proper syntax.")
         result = "err"
