@@ -12,7 +12,6 @@ the linalg.qr function.
 """
 
 import pprint
-import scipy
 import scipy.linalg
 
 A = scipy.array([[1, -4], [2,3], [2,2]])  # test values, also tested 3 by 3
@@ -26,7 +25,3 @@ pprint.pprint(Q)
 
 print "R:"          # R must be an upper triangular matrix
 pprint.pprint(R)
-
-   
-   
-   
