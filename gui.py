@@ -9,9 +9,8 @@ A. Interpolation
 B. Least Squares
 
     Linear
-        - Classical Gram-Schmidt
-        - Modified Gram-Schmidt
-        - Householder Reflectors
+        - Least Squares
+        - Householder Reflectors -- DONE
         - QR Factorization -- DONE
     Nonlinear
         - Gauss-Newton
@@ -91,7 +90,7 @@ class App(Frame):
 
         # Least Squares Frame Buttons
         self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27, command = self.linearWindow)
-        self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27)
+        self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27, command = self.nonLinearWindow)
         self.linearBtn.grid(row = 0, column = 0, sticky = W)
         self.nonLinBtn.grid(row = 0, column = 1)
 
@@ -468,35 +467,230 @@ class App(Frame):
         mainFrame = Frame(linear)
         mainFrame.pack()
 
-        Button(mainFrame, text = "Classical Gram-Schmidt", command = lambda: cGramSchmidtWindow()).pack(fill = X)
-        Button(mainFrame, text = "Modified Gram-Schmidt", command = lambda: modifiedGSWindow()).pack(fill = X)
-        Button(mainFrame, text = "Householder Reflectors", command = lambda: householderWindow()).pack(fill = X)
-        Button(mainFrame, text = "QR Factorization", command = lambda: qrWindow()).pack(fill = X)
+        Button(mainFrame, text = "Solve via Linear Least Squares", command = lambda: lsWindow()).pack(fill = X)
+        Button(mainFrame, text="QR Factorization via Gram-Schmidt", command=lambda: qrWindow()).pack(fill=X)
+        Button(mainFrame, text = "QR via Householder Reflectors", command = lambda: householderWindow()).pack(fill = X)
         Button(mainFrame, text = "Exit Window", command = lambda: linear.destroy()).pack(fill = X)
 
-        def cGramSchmidtWindow():
-            #create window
-            classical = Toplevel()
-            classical.title("Classical Gram-Schmidt")
-            mainFrame = Frame(classical)
+        def lsWindow():
+            # create window
+            ls = Toplevel()
+            ls.title("Solve via Linear Least Squares")
+            mainFrame = Frame(ls)
+            mainFrame.pack(fill="both")
+
+            l = Label(mainFrame, text="Enter size of matrix A? (n x m)")
+            l.grid(row=0, column=0, sticky=W, padx=0)
+            rowA = Entry(mainFrame, width=4)
+            rowA.grid(row=0, column=1, sticky=W, padx=10)
+            l2 = Label(mainFrame, text="x")
+            l2.grid(row=0, column=2, sticky=W)
+            colA = Entry(mainFrame, width=4)
+            colA.grid(row=0, column=3, sticky=W, padx=15)
+
+            l3 = Label(mainFrame, text="Enter size of matrix B? (n x 1)")
+            l3.grid(row=1, column=0, sticky=W, padx=0)
+            rowB = Entry(mainFrame, width=4)
+            rowB.grid(row=1, column=1, sticky=W, padx=10)
+            l4 = Label(mainFrame, text="x")
+            l4.grid(row=1, column=2, sticky=W, padx=0)
+            colB = Entry(mainFrame, width=4)
+            colB.grid(row=1, column=3, sticky=W, padx=10)
+            colB.insert(0, "1")
+            colB.config(state='disabled')
+
+            # "Submit" Button
+            sBtn = Button(mainFrame, text="Submit", command=lambda: continueLS(int(rowA.get()), int(colA.get()), int(rowB.get())))
+            sBtn.grid(row=2, column=0, pady=10, sticky=W)
+
+            def continueLS(row_A, col_A, row_B):
+                l.destroy()
+                l2.destroy()
+                l3.destroy()
+                l4.destroy()
+                rowA.destroy()
+                rowB.destroy()
+                colA.destroy()
+                colB.destroy()
+                sBtn.destroy()
+
+                A = []
+                i = 0
+                j = 0
+                rowCount = 1
+
+                Label(mainFrame, text="A =").grid(row=0, column=0, sticky=W)
+                while i < row_A:
+                    A.append([""] * col_A)
+                    j = 0
+
+                    # Print each row entry
+                    while j < col_A:
+                        A[i][j] = Entry(mainFrame, width=3)
+                        A[i][j].grid(row=rowCount, column=j, sticky=W, padx=5)
+                        j += 1
+
+                    i += 1
+                    rowCount += 1
+
+                B = []
+                i = 0
+                k = j + 1
+                rowCount = 1
+
+                Label(mainFrame, text="B =").grid(row=0, column=k, sticky=W)
+                k += 1
+                while i < row_B:
+                    B.append([""])
+                    B[i] = Entry(mainFrame, width=3)
+                    B[i].grid(row=rowCount, column=k, sticky=W, padx=5)
+
+                    i += 1
+                    #k += 1
+                    rowCount += 1
+
+                # Submit Button
+                submitBtn = Button(ls, text="Submit", command=lambda: doLeastSquares(A, B, col_A))
+                submitBtn.pack(fill="both")
+
+                resultFrame = Frame(ls)
+                resultFrame.pack(fill="x")
+
+                scrollbar = Scrollbar(resultFrame)
+                scrollbar.pack(side=RIGHT, fill=Y)
+
+                self.lsTextBox = Text(resultFrame)
+                self.lsTextBox.pack(fill="both")
+                self.lsTextBox.config(yscrollcommand=scrollbar.set)
+                scrollbar.config(command=self.lsTextBox.yview)
+
+                Button(ls, text="Exit Window", command=lambda: ls.destroy()).pack(fill=X)
+
+                def doLeastSquares(A, B, col):
+                    i = 0
+                    matrix_A = []
+                    while i < len(A):
+                        matrix_A.append([""] * col)
+                        j = 0
+                        while j < col:
+                            matrix_A[i][j] = float(A[i][j].get())
+                            j += 1
+                        i += 1
+
+                    i = 0
+                    matrix_B = []
+                    while i < len(B):
+                        matrix_B.append([""])
+                        matrix_B[i] = float(B[i].get())
+                        i += 1
+
+                    X = np.linalg.lstsq(matrix_A, matrix_B)
+                    residual = matrix_B - np.matmul(matrix_A, X[0])
+                    inner_square = 0
+                    for r in residual:
+                        inner_square += float(r)**2
+                    rmse = math.sqrt(inner_square / len(residual))
+
+                    self.lsTextBox.insert(END, "X: ")
+                    self.lsTextBox.insert(END, str(X[0]) + '^T\n')
+                    self.lsTextBox.insert(END, "RMSE: " + str(rmse))
+
+
+        def qrWindow():
+            # create window
+            qr = Toplevel()
+            qr.title("QR Factorization via Gram-Schmidt")
+            mainFrame = Frame(qr)
             mainFrame.pack(fill = "both")
 
-            Button(mainFrame, text = "Exit Window", command = lambda: classical.destroy()).pack(fill = X)
+            l = Label(mainFrame, text = "Enter size of matrix A? (n x m)")
+            l.grid(row=0, column=0, sticky=W, padx=0)
+            rowA = Entry(mainFrame, width = 4)
+            rowA.grid(row=0, column=1, sticky=W, padx=10)
+            l2 = Label(mainFrame, text = "x")
+            l2.grid(row = 0, column = 2, sticky = W)
+            colA = Entry(mainFrame, width = 4)
+            colA.grid(row = 0, column = 3, sticky = W, padx = 15)
 
-        def modifiedGSWindow():
-            #create window
-            modified = Toplevel()
-            modified.title("Modified Gram-Schmidt")
-            modified.resizable(0,0)
-            mainFrame = Frame(modified)
-            mainFrame.pack()
+            # "Submit" Button
+            sBtn = Button(mainFrame, text="Submit", command=lambda: continueQr(int(rowA.get()), int(colA.get())))
+            sBtn.grid(row=1, column=0, pady=10, sticky=W)
 
-            Button(mainFrame, text = "Exit Window", command = lambda: modified.destroy()).pack(fill = X)
+            def continueQr(row, col):
+                l.destroy()
+                l2.destroy()
+                rowA.destroy()
+                colA.destroy()
+                sBtn.destroy()
+
+                A = []
+                i = 0
+                rowCount = 1
+
+                Label(mainFrame, text = "A =").grid(row = 0, column = 0, sticky = W)
+                # 3 x 3
+                while i < row:
+                    A.append([""] * col)
+                    j = 0
+
+                    # Print each row entry
+                    while j < col:
+                        A[i][j] = Entry(mainFrame, width = 3)
+                        A[i][j].grid(row = rowCount, column = j, sticky = W, padx = 5)
+                        j += 1
+
+                    i += 1
+                    rowCount += 1
+
+                # Submit Button
+                submitBtn = Button(qr, text="Submit", command = lambda: doQr(A, col))
+                submitBtn.pack(fill = "both")
+                rowCount += 2
+
+                resultFrame = Frame(qr)
+                resultFrame.pack(fill = "x")
+
+                scrollbar = Scrollbar(resultFrame)
+                scrollbar.pack(side=RIGHT, fill=Y)
+
+                self.qrTextBox = Text(resultFrame)
+                self.qrTextBox.pack(fill = "both")
+                self.qrTextBox.config(yscrollcommand = scrollbar.set)
+                scrollbar.config(command = self.qrTextBox.yview)
+
+                Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
+
+                def doQr(inputA, c):
+                    i = 0
+                    ourMatrix = []
+                    while i < len(inputA):
+                        ourMatrix.append([""] * c)
+                        j = 0
+
+                        while j < c:
+                            ourMatrix[i][j] = inputA[i][j].get()
+                            j += 1
+                        i += 1
+
+                    A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+                    Q, R = scipy.linalg.qr(A)
+
+                    self.qrTextBox.insert(END, "A:\n")
+                    for row in np.matrix(ourMatrix):
+                        self.qrTextBox.insert(END, str(row) + '\n')
+
+                    self.qrTextBox.insert(END, "Q:\n")
+                    for row in Q:
+                        self.qrTextBox.insert(END, str(row) + '\n')
+
+                    self.qrTextBox.insert(END, "R:\n")
+                    for row in R:
+                        self.qrTextBox.insert(END, str(row) + '\n')
 
         def householderWindow():
             # create window
             householder = Toplevel()
-            householder.title("Householder")
+            householder.title("QR via Householder Reflectors")
             mainFrame = Frame(householder)
             mainFrame.pack(fill="both")
 
@@ -586,100 +780,35 @@ class App(Frame):
                     for row in R:
                         self.householderTextBox.insert(END, str(row) + '\n')
 
-        def qrWindow():
+    def nonLinearWindow(self):
+        # create window
+        nonlinear = Toplevel(self)
+        nonlinear.title("Linear Least Squares")
+        nonlinear.resizable(0, 0)
+        mainFrame = Frame(nonlinear)
+        mainFrame.pack()
+
+        Button(mainFrame, text="Gauss-Newton", command=lambda: gnWindow()).pack(fill=X)
+        Button(mainFrame, text="Levenber-Marquardt", command=lambda: lmWindow()).pack(fill=X)
+        Button(mainFrame, text="Exit Window", command=lambda: nonlinear.destroy()).pack(fill=X)
+
+        def gnWindow():
             #create window
-            qr = Toplevel()
-            qr.title("QR Factorization")
-            mainFrame = Frame(qr)
+            gn = Toplevel()
+            gn.title("Gauss-Newton")
+            mainFrame = Frame(gn)
             mainFrame.pack(fill = "both")
 
-            l = Label(mainFrame, text = "Enter size of matrix A? (n x m)")
-            l.grid(row=0, column=0, sticky=W, padx=0)
-            rowA = Entry(mainFrame, width = 4)
-            rowA.grid(row=0, column=1, sticky=W, padx=10)
-            l2 = Label(mainFrame, text = "x")
-            l2.grid(row = 0, column = 2, sticky = W)
-            colA = Entry(mainFrame, width = 4)
-            colA.grid(row = 0, column = 3, sticky = W, padx = 15)
+            Button(mainFrame, text = "Exit Window", command = lambda: gn.destroy()).pack(fill = X)
 
-            # "Submit" Button
-            sBtn = Button(mainFrame, text="Submit", command=lambda: continueQr(int(rowA.get()), int(colA.get())))
-            sBtn.grid(row=1, column=0, pady=10, sticky=W)
+        def lmWindow():
+            #create window
+            lm = Toplevel()
+            lm.title("Levenber-Marquardt")
+            mainFrame = Frame(lm)
+            mainFrame.pack(fill = "both")
 
-            def continueQr(row, col):
-                l.destroy()
-                l2.destroy()
-                rowA.destroy()
-                colA.destroy()
-                sBtn.destroy()
-
-                A = []
-                i = 0
-                rowCount = 1
-
-                Label(mainFrame, text = "A =").grid(row = 0, column = 0, sticky = W)
-                # 3 x 3
-                while i < row:
-                    A.append([""] * col)
-                    j = 0
-
-                    # Print each row entry
-                    while j < col:
-                        A[i][j] = Entry(mainFrame, width = 3)
-                        A[i][j].grid(row = rowCount, column = j, sticky = W, padx = 5)
-                        j += 1
-
-                    i += 1
-                    rowCount += 1
-
-                # Submit Button
-                submitBtn = Button(qr, text="Submit", command = lambda: doQr(A, row, col))
-                submitBtn.pack(fill = "both")
-                rowCount += 2
-
-                resultFrame = Frame(qr)
-                resultFrame.pack(fill = "x")
-
-                scrollbar = Scrollbar(resultFrame)
-                scrollbar.pack(side=RIGHT, fill=Y)
-
-                self.qrTextBox = Text(resultFrame)
-                self.qrTextBox.pack(fill = "both")
-                self.qrTextBox.config(yscrollcommand = scrollbar.set)
-                scrollbar.config(command = self.qrTextBox.yview)
-
-                Button(qr, text = "Exit Window", command = lambda: qr.destroy()).pack(side = BOTTOM, fill = "both")
-
-                def doQr(inputA, r, c):
-                    i = 0
-                    ourMatrix = []
-                    while i < len(inputA):
-                        ourMatrix.append([""] * c)
-                        j = 0
-
-                        while j < c:
-                            ourMatrix[i][j] = inputA[i][j].get()
-                            j += 1
-
-                        i += 1
-
-                    A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
-                    Q, R = scipy.linalg.qr(A)
-
-                    self.qrTextBox.insert(END, "A:\n")
-                    for row in np.matrix(ourMatrix):
-                        self.qrTextBox.insert(END, str(row) + '\n')
-
-                    self.qrTextBox.insert(END, "Q:\n")
-                    for row in Q:
-                        self.qrTextBox.insert(END, str(row) + '\n')
-
-                    self.qrTextBox.insert(END, "R:\n")
-                    for row in R:
-                        self.qrTextBox.insert(END, str(row) + '\n')
-
-    def nonLinearWindow(self):
-        print "hi"
+            Button(mainFrame, text = "Exit Window", command = lambda: lm.destroy()).pack(fill = X)
 
     def start(self):
         self.root.mainloop()
