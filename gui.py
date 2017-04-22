@@ -787,14 +787,17 @@ class App(Frame):
         mainFrame = Frame(nonlinear)
         mainFrame.pack()
 
-        Button(mainFrame, text="Gauss-Newton", command=lambda: gnWindow()).pack(fill=X)
-        Button(mainFrame, text="Levenber-Marquardt", command=lambda: lmWindow()).pack(fill=X)
+        Button(mainFrame, text="Gauss-Newton", command=lambda: gnWindow(0)).pack(fill=X)
+        Button(mainFrame, text="Levenberg-Marquardt", command=lambda: gnWindow(1)).pack(fill=X)
         Button(mainFrame, text="Exit Window", command=lambda: nonlinear.destroy()).pack(fill=X)
 
-        def gnWindow():
-            #create window
+        def gnWindow(_type):
+            # create window
             self.gn = Toplevel()
-            self.gn.title("Gauss-Newton Method")
+            if _type == 0:
+                self.gn.title("Gauss-Newton Method")
+            elif _type == 1:
+                self.gn.title("Levenberg-Marquardt Method")
             mainFrame = Frame(self.gn)
             mainFrame.pack(fill = "both")
 
@@ -867,6 +870,13 @@ class App(Frame):
                 k.grid(row=row_count, column=1, sticky=W, padx=25)
                 row_count += 1
 
+                _lambda = 0
+                if _type == 1:
+                    Label(mainFrame, text="Lambda:").grid(row=row_count, column=0, sticky=W, padx=0)
+                    _lambda = Entry(mainFrame, width=3)
+                    _lambda.grid(row=row_count, column=1, sticky=W, padx=25)
+                    row_count += 1
+
                 it = 0
                 Label(mainFrame, text="Enter number of iterations:").grid(row=row_count, column=0, sticky=W, padx=0)
                 it = Entry(mainFrame, width=3)
@@ -874,7 +884,7 @@ class App(Frame):
                 row_count += 1
 
                 # Submit Button
-                submitBtn = Button(self.gn, text="Submit", command=lambda: doGN(points, R, vk, k, it))
+                submitBtn = Button(self.gn, text="Submit", command=lambda: doGN(points, R, vk, k, _lambda, it))
                 submitBtn.pack(fill="both")
                 row_count += 2
 
@@ -891,7 +901,7 @@ class App(Frame):
 
                 Button(self.gn, text = "Exit Window", command = lambda: self.gn.destroy()).pack(fill = X)
 
-                def doGN(points, R, vk, k, it):
+                def doGN(points, R, vk, k, _lambda, it):
                     i = 0
                     all_points = []
                     while i < len(points):
@@ -930,6 +940,10 @@ class App(Frame):
                         K = "null"
 
                     iterations = int(it.get())
+                    if _type == 1:
+                        lmbda = float(_lambda.get())
+                    else:
+                        lmbda = 0
 
                     solutions = []
                     rmse = []
@@ -937,7 +951,6 @@ class App(Frame):
                     base_str_x = "(x xi) / sqrt((x xi)^2 + (y yi)^2)"
                     base_str_y = "(y yi) / sqrt((x xi)^2 + (y yi)^2)"
                     base_str_rk = "sqrt((x xi)^2 + (y yi)^2) Ri K"
-
 
                     _it = 0
                     while _it < iterations:
@@ -972,7 +985,8 @@ class App(Frame):
                             rk[i][0] = f(all_vk[0][0], r0_str, all_vk[1][0])
                             i += 1
 
-                        lhs = np.matmul(map(list, zip(*A)), A)
+                        ata = np.matmul(map(list, zip(*A)), A)
+                        lhs = ata + (lmbda * np.diag(ata))
                         rhs = -1 * np.matmul(map(list, zip(*A)), rk)
                         all_vk = np.linalg.solve(lhs, rhs)
                         all_vk = all_vk.tolist()
@@ -1005,17 +1019,6 @@ class App(Frame):
                     plt.ylabel("RMSE")
                     plt.title("RMSE over Iterations")
                     plt.show()
-
-
-
-        def lmWindow():
-            #create window
-            lm = Toplevel()
-            lm.title("Levenber-Marquardt")
-            mainFrame = Frame(lm)
-            mainFrame.pack(fill = "both")
-
-            Button(mainFrame, text = "Exit Window", command = lambda: lm.destroy()).pack(fill = X)
 
     def start(self):
         self.root.mainloop()
