@@ -31,7 +31,7 @@ C. Differentiation and Integration
 '''
 
 import matplotlib
-matplotlib.use("TkAgg")
+matplotlib.use("TkAgg") # needed for Macs
 from Householder import Householder
 import time
 from Tkinter import *
@@ -793,12 +793,220 @@ class App(Frame):
 
         def gnWindow():
             #create window
-            gn = Toplevel()
-            gn.title("Gauss-Newton")
-            mainFrame = Frame(gn)
+            self.gn = Toplevel()
+            self.gn.title("Gauss-Newton Method")
+            mainFrame = Frame(self.gn)
             mainFrame.pack(fill = "both")
 
-            Button(mainFrame, text = "Exit Window", command = lambda: gn.destroy()).pack(fill = X)
+            prompt1 = "How many data points do you have?: "
+            l = Label(mainFrame, text=prompt1)
+            l.grid(row=0, column=0, sticky=W, padx=0)
+            aGN = Entry(mainFrame, width=3)
+            aGN.grid(row=0, column=1, sticky=W, padx=25)
+
+            # "Enter Points" Button
+            epBtn = Button(mainFrame, text="Enter Points", command=lambda: moreGN(int(aGN.get())))
+            epBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+            def moreGN(n):
+                l.destroy()
+                aGN.destroy()
+                epBtn.destroy()
+
+                row_count = 0
+
+                Label(mainFrame, text="Enter points:").grid(row=row_count, column=0, sticky=W, padx=0)
+                row_count += 1
+
+                points = []
+                i = 0
+                while i < n:
+                    points.append(["", ""])
+                    # x_i
+                    Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
+                    points[i][0] = Entry(mainFrame, width=3)
+                    points[i][0].grid(row=row_count, column=0, sticky=W, padx=25)
+                    # y_i
+                    Label(mainFrame, text="y_" + (str(i + 1)) + ": ").grid(row=row_count, column=1, sticky=W, padx=0)
+                    points[i][1] = Entry(mainFrame, width=3)
+                    points[i][1].grid(row=row_count, column=1, sticky=W, padx=25)
+                    row_count += 1
+                    i += 1
+
+                Label(mainFrame, text="Enter radii:").grid(row=row_count, column=0, sticky=W, padx=0)
+                row_count += 1
+
+                R = []
+                i = 0
+                while i <= len(points[0]):
+                    # R_i
+                    R.append("")
+                    Label(mainFrame, text="R_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
+                    R[i] = Entry(mainFrame, width=3)
+                    R[i].grid(row=row_count, column=0, sticky=W, padx=25)
+                    row_count += 1
+                    i += 1
+
+                vk = []
+                Label(mainFrame, text="Enter the starting vector:").grid(row=row_count, column=0, sticky=W, padx=0)
+                row_count += 1
+                vk.append("")
+                Label(mainFrame, text="x^0: ").grid(row=row_count, column=0, sticky=W, padx=0)
+                vk[0] = Entry(mainFrame, width=3)
+                vk[0].grid(row=row_count, column=0, sticky=W, padx=25)
+                row_count += 1
+                vk.append("")
+                Label(mainFrame, text="y^0: ").grid(row=row_count, column=0, sticky=W, padx=0)
+                vk[1] = Entry(mainFrame, width=3)
+                vk[1].grid(row=row_count, column=0, sticky=W, padx=25)
+                row_count += 1
+
+                k = "null"
+                Label(mainFrame, text="If you have a K value, enter here (optional):").grid(row=row_count, column=0, sticky=W, padx=0)
+                k = Entry(mainFrame, width=3)
+                k.grid(row=row_count, column=1, sticky=W, padx=25)
+                row_count += 1
+
+                it = 0
+                Label(mainFrame, text="Enter number of iterations:").grid(row=row_count, column=0, sticky=W, padx=0)
+                it = Entry(mainFrame, width=3)
+                it.grid(row=row_count, column=1, sticky=W, padx=25)
+                row_count += 1
+
+                # Submit Button
+                submitBtn = Button(self.gn, text="Submit", command=lambda: doGN(points, R, vk, k, it))
+                submitBtn.pack(fill="both")
+                row_count += 2
+
+                resultFrame = Frame(self.gn)
+                resultFrame.pack(fill="x")
+
+                scrollbar = Scrollbar(resultFrame)
+                scrollbar.pack(side=RIGHT, fill=Y)
+
+                self.gnTextBox = Text(resultFrame)
+                self.gnTextBox.pack(fill="both")
+                self.gnTextBox.config(yscrollcommand=scrollbar.set)
+                scrollbar.config(command=self.gnTextBox.yview)
+
+                Button(self.gn, text = "Exit Window", command = lambda: self.gn.destroy()).pack(fill = X)
+
+                def doGN(points, R, vk, k, it):
+                    i = 0
+                    all_points = []
+                    while i < len(points):
+                        all_points.append(["", ""])
+                        all_points[i][0] = points[i][0].get()
+                        all_points[i][1] = points[i][1].get()
+                        i += 1
+
+                    # assert that points are sorted by increasing x value
+                    all_points = sorted(all_points, key=lambda x: (x[0]))
+
+                    x = []
+                    i = 0
+                    while i < len(all_points):
+                        x.append(float(all_points[i][0]))
+                        i += 1
+                    y = []
+                    i = 0
+                    while i < len(all_points):
+                        y.append(float(all_points[i][1]))
+                        i += 1
+
+                    all_R = []
+                    i = 0
+                    while i < len(R):
+                        all_R.append("")
+                        all_R[i] = float(R[i].get())
+                        i += 1
+
+                    all_vk = [[""], [""]]
+                    all_vk[0][0] = vk[0].getdouble()
+                    all_vk[1][0] = vk[1].getdouble()
+
+                    K = k.get()
+                    if not K.isdigit():
+                        K = "null"
+
+                    iterations = int(it.get())
+
+                    solutions = []
+                    rmse = []
+
+                    base_str_x = "(x xi) / sqrt((x xi)^2 + (y yi)^2)"
+                    base_str_y = "(y yi) / sqrt((x xi)^2 + (y yi)^2)"
+                    base_str_rk = "sqrt((x xi)^2 + (y yi)^2) Ri K"
+
+
+                    _it = 0
+                    while _it < iterations:
+                        i = 0
+                        A = []
+                        while i < len(x):
+                            if K == "null":
+                                A.append(["", ""])
+                            else:
+                                A.append(["", "", ""])
+                            A0_str = base_str_x.replace(" xi", "%+f" % (x[i] * -1))
+                            A0_str = A0_str.replace(" yi", "%+f" % (y[i] * -1))
+                            A[i][0] = f(all_vk[0][0], A0_str, all_vk[1][0])
+                            A1_str = base_str_y.replace(" xi", "%+f" % (x[i] * -1))
+                            A1_str = A1_str.replace(" yi", "%+f" % (y[i] * -1))
+                            A[i][1] = f(all_vk[0][0], A1_str, all_vk[1][0])
+                            if K != "null":
+                                A[i][2] = -1
+                            i += 1
+
+                        i = 0
+                        rk = []
+                        while i < len(x):
+                            rk.append([""])
+                            r0_str = base_str_rk.replace(" xi", "%+f" % (x[i] * -1))
+                            r0_str = r0_str.replace(" yi", "%+f" % (y[i] * -1))
+                            r0_str = r0_str.replace("Ri", "%+f" % (all_R[i] * -1))
+                            set_k = 0
+                            if K != "null":
+                                set_k = float(K)
+                            r0_str = r0_str.replace("K", "%+f" % (set_k * -1))
+                            rk[i][0] = f(all_vk[0][0], r0_str, all_vk[1][0])
+                            i += 1
+
+                        lhs = np.matmul(map(list, zip(*A)), A)
+                        rhs = -1 * np.matmul(map(list, zip(*A)), rk)
+                        all_vk = np.linalg.solve(lhs, rhs)
+                        all_vk = all_vk.tolist()
+                        solutions.append(all_vk)
+
+                        inner_square = 0
+                        for r in rk:
+                            inner_square += float(r[0]) ** 2
+                        rmse.append(math.sqrt(inner_square / float(len(rk))))
+                        _it += 1
+
+                    graph_x = []
+                    i = 0
+                    while i < iterations:
+                        graph_x.append(i + 1)
+                        i += 1
+
+                    i = 0
+                    for row in solutions:
+                        _str = "Iteration " + str(i + 1) + ": " + str(row)
+                        self.gnTextBox.insert(END, _str + '\n')
+                    self.gnTextBox.insert(END, '\n')
+                    i = 0
+                    for row in rmse:
+                        _str = "RMSE for Iteration " + str(i + 1) + ": " + str(row)
+                        self.gnTextBox.insert(END, _str + '\n')
+
+                    plt.plot(graph_x, rmse)
+                    plt.xlabel("Iterations")
+                    plt.ylabel("RMSE")
+                    plt.title("RMSE over Iterations")
+                    plt.show()
+
+
 
         def lmWindow():
             #create window
