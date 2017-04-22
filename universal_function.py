@@ -2,12 +2,7 @@ import math
 import numpy as np
 
 
-def f(x, _str, y="null"):
-    # convert x to float as required
-    x = float(x)
-    if y != "null":
-        y = float(y)
-
+def format(_type, _str, var_list):
     # no capital letters in function
     _str = _str.lower()
 
@@ -23,59 +18,88 @@ def f(x, _str, y="null"):
             if i >= len(_str):
                 _str += ")"
             else:
-                while i < len(_str) and (_str[i].isdigit() or _str[i] == "x"):
+                while i < len(_str) and (_str[i].isdigit() or _str[i] in var_list):
                     i += 1
                 _str = _str[:i] + ")" + _str[i:]
         i += 1
-    _str = _str.replace("e^", "math.exp")
-    _str = _str.replace('^', "**")
-
-    # convert trig and log functions to their Pythonic values
-    _str = _str.replace("sqrt", "math.sqrt")
-    _str = _str.replace("sin", "math.sin")
-    _str = _str.replace("asin", "math.asin")
-    _str = _str.replace("sin**-1", "math.asin")
-    _str = _str.replace("sin**(-1)", "math.asin")
-    _str = _str.replace("cos", "math.cos")
-    _str = _str.replace("acos", "math.acos")
-    _str = _str.replace("cos**-1", "math.acos")
-    _str = _str.replace("cos**(-1)", "math.acos")
-    _str = _str.replace("tan", "math.tan")
-    _str = _str.replace("asin", "math.asin")
-    _str = _str.replace("tan**-1", "math.atan")
-    _str = _str.replace("tan**(-1)", "math.atan")
-    _str = _str.replace("log", "math.log10")
-    if "ln" in _str:
-        idx = _str.find("ln")
-        while _str[idx] != ')':
-            idx += 1
-        _str = _str[:idx] + ",2" + _str[idx:]
-        _str = _str.replace("ln", "math.log")
-
-    # handle factorial expressions
-    if '!' in _str:
-        x = int(x)
-        idx = _str.find('!')
-        if _str[idx - 1] == ')':
-            paren_stack = 1
-            while paren_stack > 0 and idx > 0:
-                if _str[idx] == ')':
-                    paren_stack += 1
-                elif _str[idx] == '(':
-                    paren_stack -= 1
-                idx -= 1
-        _str = _str.replace('!', "")
-        _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
 
     # convert multiplication of the form ax to a*x
-    i = 1
+    no_mul_symbols = [')', '^', '*', '+', '-', '/']
+    i = 0
     while i < len(_str):
-        if _str[i] == "x":
-            if _str[i - 1].isdigit():
-                _str = _str[:i] + "*" + _str[i:]
+        this_str = _str[i]
+        if _str[i] in var_list:
+            if i + 1 < len(_str) and _str[i + 1] not in no_mul_symbols:
+                if i > 0:
+                    _str = _str[:i + 1] + "*" + _str[i + 1:]
+                else:
+                    _str = _str[i] + "*" + _str[i + 1:]
         i += 1
 
-    result = ""
+    if _type == 0:
+        _str = _str.replace("e^", "math.exp")
+    else:
+        _str = _str.replace("e^", "exp")
+    _str = _str.replace('^', "**")
+
+    if _type == 0:
+        # convert trig and log functions to their Pythonic values
+        _str = _str.replace("sqrt", "math.sqrt")
+        _str = _str.replace("sin", "math.sin")
+        _str = _str.replace("asin", "math.asin")
+        _str = _str.replace("sin**-1", "math.asin")
+        _str = _str.replace("sin**(-1)", "math.asin")
+        _str = _str.replace("cos", "math.cos")
+        _str = _str.replace("acos", "math.acos")
+        _str = _str.replace("cos**-1", "math.acos")
+        _str = _str.replace("cos**(-1)", "math.acos")
+        _str = _str.replace("tan", "math.tan")
+        _str = _str.replace("asin", "math.asin")
+        _str = _str.replace("tan**-1", "math.atan")
+        _str = _str.replace("tan**(-1)", "math.atan")
+        _str = _str.replace("log", "math.log10")
+        if "ln" in _str:
+            idx = _str.find("ln")
+            while _str[idx] != ')':
+                idx += 1
+            _str = _str[:idx] + ",2" + _str[idx:]
+            _str = _str.replace("ln", "math.log")
+
+        # handle factorial expressions
+        if '!' in _str:
+            idx = _str.find('!')
+            if _str[idx - 1] == ')':
+                paren_stack = 1
+                while paren_stack > 0 and idx > 0:
+                    if _str[idx] == ')':
+                        paren_stack += 1
+                    elif _str[idx] == '(':
+                        paren_stack -= 1
+                    idx -= 1
+            _str = _str.replace('!', "")
+            _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
+
+    return _str
+
+
+def f(x, _str, y="null", *_vars):
+    var_list = ['x']
+    if '!' in _str:
+        x = int(x)
+    else:
+        x = float(x)
+    if y != "null":
+        y = float(y)
+        var_list.append('y')
+
+    next_var = 'a'
+    i = 0
+    while i < len(_vars):
+        var_list.append(chr(ord(next_var) + i))
+        i += 1
+
+    _str = format(0, _str, var_list)
+
     try:
         result = float(eval(_str))
     except (TypeError, SyntaxError, NameError):

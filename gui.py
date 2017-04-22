@@ -938,7 +938,6 @@ class App(Frame):
                     base_str_y = "(y yi) / sqrt((x xi)^2 + (y yi)^2)"
                     base_str_rk = "sqrt((x xi)^2 + (y yi)^2) Ri K"
 
-
                     _it = 0
                     while _it < iterations:
                         i = 0
@@ -1005,8 +1004,6 @@ class App(Frame):
                     plt.ylabel("RMSE")
                     plt.title("RMSE over Iterations")
                     plt.show()
-
-
 
         def lmWindow():
             #create window
