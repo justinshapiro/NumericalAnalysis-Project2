@@ -2,7 +2,12 @@
 import numpy
 def richardson (f, x, n, h):
 
+
+
     """
+    
+    THIS IS ONLY THE FUNCTION TO IMPLEMENT EXTRAPOLATION
+    
     Use def richardson to find approximate extrapolation f'(x) at a particular x 
     d = richardson (f, x, n, h):
     f: function to find the derivative 
