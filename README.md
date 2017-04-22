@@ -28,12 +28,11 @@ A. Interpolation
 B. Least Squares
 
  - Linear
-    - Classical Gram-Schmidt
-    - Modified Gram-Schmidt
-    - Householder Reflectors
+    - Least Squres -- DONE
+    - Householder Reflectors -- DONE
     - QR Factorization -- DONE
  - Nonlinear
-    - Gauss-Newton
+    - Gauss-Newton -- DONE
     - Levenberg-Marquardt
 
 C. Differentiation and Integration
