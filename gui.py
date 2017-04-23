@@ -2,6 +2,8 @@
 
 A. Interpolation
 
+    Lagrange -- DONE
+    Newton's Divided Differences -- DONE
     Chebyshev -- DONE
     Splines (cubic) -- DONE
     Bezier -- DONE
@@ -14,7 +16,7 @@ B. Least Squares
         - QR Factorization -- DONE
     Nonlinear
         - Gauss-Newton -- DONE
-        - Levenberg-Marquardt -- DONe
+        - Levenberg-Marquardt -- DONE
 
 C. Differentiation and Integration
 

@@ -21,6 +21,8 @@ Windows version will be compiled to .exe using py2exe, Mac runs Python 2.7 nativ
 
 A. Interpolation
 
+ - Lagrange -- DONE
+ - Newton's Divided Differences -- DONE
  - Chebyshev -- DONE
  - Splines (cubic) -- DONE
  - Bezier -- DONE
