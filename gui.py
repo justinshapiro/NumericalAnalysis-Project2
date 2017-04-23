@@ -2,6 +2,8 @@
 
 A. Interpolation
 
+    Lagrange -- DONE
+    Newton's Divided Differences -- DONE
     Chebyshev -- DONE
     Splines (cubic) -- DONE
     Bezier -- DONE
@@ -9,12 +11,12 @@ A. Interpolation
 B. Least Squares
 
     Linear
-        - Least Squares
+        - Least Squares -- DONE
         - Householder Reflectors -- DONE
         - QR Factorization -- DONE
     Nonlinear
-        - Gauss-Newton
-        - Levenberg-Marquardt
+        - Gauss-Newton -- DONE
+        - Levenberg-Marquardt -- DONE
 
 C. Differentiation and Integration
 
@@ -30,13 +32,13 @@ C. Differentiation and Integration
 
 '''
 
+from Tkinter import *
+import tkFont
+from ttk import *
 import matplotlib
 matplotlib.use("TkAgg") # needed for Macs
 from Householder import Householder
 import time
-from Tkinter import *
-import tkFont
-from ttk import *
 from chebyshev import Chebyshev
 import math
 from universal_function import f
@@ -45,13 +47,16 @@ import bezier
 import matplotlib.pyplot as plt
 import scipy
 from scipy import interpolate, linalg
+from scipy.interpolate import lagrange
+from NDD import *
+from sympy import *
 
 class App(Frame):
     def __init__(self):
         self.root = Tk()
         self.root.s = Style()
         self.root.geometry("420x300")
-        self.root.resizable(1,1)  # made resizable for now, may need to increase geometry
+        self.root.resizable(1, 1)  # made resizable for now, may need to increase geometry
         self.root.s.theme_use("clam")
         self.root.title("Numerical Analysis - Project 2")
 
@@ -63,25 +68,27 @@ class App(Frame):
             time.sleep(1)
 
     def createWidgets(self):
-
         # Interpolation Frame
-        self.interpLabelframe = LabelFrame(self.root, text = "Interpolation", labelanchor = N)
-        self.interpLabelframe.grid(row = 0, columnspan = 7, sticky = 'WE', \
-                                   padx = 5, pady = 5, ipadx = 5, ipady = 5)
+        self.interpLabelframe = LabelFrame(self.root, text = "Interpolation", labelanchor='n')
+        self.interpLabelframe.grid(row = 0, columnspan = 7, sticky = 'WE', padx = 5, pady = 5, ipadx = 5, ipady = 5)
         self.interpLabelframe.pack(fill = 'both', expand = 'yes')
         self.innerInFrame = Frame(self.interpLabelframe)
         self.innerInFrame.grid(padx=1)
 
         # Interpolation Frame Buttons
+        self.lagrangeButton = Button(self.innerInFrame, text="Lagrange", width=20, command=self.lagrangeWindow)
+        self.nddButton = Button(self.innerInFrame, text="Newton's Divided Diff", width=20, command=self.nddWindow)
         self.chebyButton = Button(self.innerInFrame, text = "Chebyshev", width=20, command = self.chebyWindow)
-        self.splinesButton = Button(self.innerInFrame, text = "Splines (cubic)", width=20, command = self.splinesWindow)
+        self.splinesButton = Button(self.innerInFrame, text = "Cubic Splines", width=20, command = self.splinesWindow)
         self.bezierButton = Button(self.innerInFrame, text = "Bezier", width=21, command = self.bezierWindow)
-        self.chebyButton.grid(row = 0, column = 0)
-        self.splinesButton.grid(row = 0, column = 1)
-        self.bezierButton.grid(row = 0, column = 2)
+        self.lagrangeButton.grid(row=0, column=0)
+        self.nddButton.grid(row=0, column=1)
+        self.chebyButton.grid(row=0, column=2)
+        self.splinesButton.grid(row=1, column=0, columnspan=2)
+        self.bezierButton.grid(row=1, column=1, columnspan=2)
 
         # Least Squares Frame
-        self.lsLabelframe = LabelFrame(self.root, text = "Least Squares", labelanchor = N)
+        self.lsLabelframe = LabelFrame(self.root, text = "Least Squares", labelanchor='n')
         self.lsLabelframe.grid(row = 2, sticky = 'WE', \
                                padx = 5, pady = 5, ipadx = 5, ipady = 5)
         self.lsLabelframe.pack(fill = 'both', expand = 'yes')
@@ -95,14 +102,13 @@ class App(Frame):
         self.nonLinBtn.grid(row = 0, column = 1)
 
         # Differentiation and Integration Frame
-        self.diffAndInt = Frame(self.root)#, text = "Differentiation and Integration", labelanchor = N)
-        self.diffAndInt.grid(row = 0, columnspan = 7, sticky = 'WE', \
-                                   padx = 5, pady = 5, ipadx = 10, ipady = 5)
+        self.diffAndInt = Frame(self.root)
+        self.diffAndInt.grid(row = 0, columnspan = 7, sticky = 'WE', padx = 5, pady = 5, ipadx = 10, ipady = 5)
         self.diffAndInt.pack(fill = 'both', expand = 'yes')
 
         # Sub Frames
-        self.diffFrame = LabelFrame(self.diffAndInt, text = "Differentiation", labelanchor = N)
-        self.intFrame = LabelFrame(self.diffAndInt, text = "Integration", labelanchor = N)
+        self.diffFrame = LabelFrame(self.diffAndInt, text = "Differentiation", labelanchor='n')
+        self.intFrame = LabelFrame(self.diffAndInt, text = "Integration", labelanchor='n')
         self.diffFrame.grid(row = 0, column = 0, columnspan = 2)
         self.intFrame.grid(row = 1, column = 0)
         self.diffFrame.pack(expand = 'yes')
@@ -112,15 +118,12 @@ class App(Frame):
         self.differenceBtn = Button(self.diffFrame, text = "Difference Methods")
         self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20)
         self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation")
-
         self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20)
         self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20)
         self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20)
-
         self.differenceBtn.grid(row = 0, column = 0)
         self.extrapBtn.grid(row = 0, column = 1)
         self.autoDiffBtn.grid(row = 0, column = 2)
-
         self.newtonCodesBtn.grid(row = 0, column = 0)
         self.rombergBtn.grid(row = 0, column = 1)
         self.adaptBtn.grid(row = 0, column = 2)
@@ -136,6 +139,162 @@ class App(Frame):
     #####################
     ### Interpolation ###
     #####################
+
+    def lagrangeWindow(self):
+        self.lagrange = Toplevel()
+        self.lagrange.title("Lagrange")
+        self.lagrange.resizable(0,0)
+        mainFrame = Frame(self.lagrange)
+        self._font = tkFont.Font(family="Helvetica", size=8)
+        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        mainFrame.pack()
+
+        prompt1 = "How many data points do you have?: "
+        l = Label(mainFrame, text=prompt1)
+        l.grid(row=0, column=0, sticky=W, padx=0)
+        aLagrange = Entry(mainFrame, width=3)
+        aLagrange.grid(row=0, column=1, sticky=W, padx=25)
+
+        # "Enter Points" Button
+        epBtn = Button(mainFrame, text="Enter Points", command=lambda: moreLagrange(int(aLagrange.get())))
+        epBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+        def moreLagrange(n):
+            l.destroy()
+            aLagrange.destroy()
+            epBtn.destroy()
+
+            points = []
+            i = 0
+            row_count = 0
+            while i < n:
+                points.append(["", ""])
+                # x_i
+                Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
+                points[i][0] = Entry(mainFrame, width=3)
+                points[i][0].grid(row=row_count, column=0, sticky=W, padx=25)
+                # y_i
+                Label(mainFrame, text="y_" + (str(i + 1)) + ": ").grid(row=row_count, column=1, sticky=W, padx=0)
+                points[i][1] = Entry(mainFrame, width=3)
+                points[i][1].grid(row=row_count, column=1, sticky=W, padx=25)
+                row_count += 1
+                i += 1
+
+            _l = Label(mainFrame, text="Interpolating Polynomial: ")
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text="Submit", command=lambda: self.doLagrange(points))
+            submitBtn.grid(row=row_count, column=0, columnspan=3, pady=10, sticky=W)
+            row_count += 1
+
+            _l.grid(row=row_count, column=0, sticky=W, padx=0)
+            row_count += 1
+            self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
+
+    def doLagrange(self, points):
+        x = []
+        y = []
+        i = 0
+        while i < len(points):
+            x.append(float(points[i][0].get()))
+            y.append(float(points[i][1].get()))
+            i += 1
+
+        P = str(lagrange(x, y))
+
+        i = 0
+        exp_list = []
+        while P[i] != '\n':
+            if P[i].isdigit():
+                exp_list.append(P[i])
+            i += 1
+        P = P.split('\n')[1]
+        i = 0
+        while i < len(P) and len(exp_list) > 0:
+            if P[i] == 'x':
+                P = P[:i + 1] + "^" + str(exp_list.pop()) + P[i + 1:]
+            i += 1
+        P = P.replace(' ', '')
+
+        self.text_box.insert(END, "P(x) = " + P + "\n")
+
+    def nddWindow(self):
+        self.ndd = Toplevel()
+        self.ndd.title("Newton's Divided Differences")
+        self.ndd.resizable(0,0)
+        mainFrame = Frame(self.ndd)
+        self._font = tkFont.Font(family="Helvetica", size=8)
+        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        mainFrame.pack()
+
+        prompt1 = "How many data points do you have?: "
+        l = Label(mainFrame, text=prompt1)
+        l.grid(row=0, column=0, sticky=W, padx=0)
+        aNDD = Entry(mainFrame, width=3)
+        aNDD.grid(row=0, column=1, sticky=W, padx=25)
+
+        # "Enter Points" Button
+        epBtn = Button(mainFrame, text="Enter Points", command=lambda: moreNDD(int(aNDD.get())))
+        epBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+        def moreNDD(n):
+            l.destroy()
+            aNDD.destroy()
+            epBtn.destroy()
+
+            points = []
+            i = 0
+            row_count = 0
+            while i < n:
+                points.append(["", ""])
+                # x_i
+                Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
+                points[i][0] = Entry(mainFrame, width=3)
+                points[i][0].grid(row=row_count, column=0, sticky=W, padx=25)
+                # y_i
+                Label(mainFrame, text="y_" + (str(i + 1)) + ": ").grid(row=row_count, column=1, sticky=W, padx=0)
+                points[i][1] = Entry(mainFrame, width=3)
+                points[i][1].grid(row=row_count, column=1, sticky=W, padx=25)
+                row_count += 1
+                i += 1
+
+            _l = Label(mainFrame, text="Interpolating Polynomial: ")
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text="Submit", command=lambda: self.doNDD(points))
+            submitBtn.grid(row=row_count, column=0, columnspan=3, pady=10, sticky=W)
+            row_count += 1
+
+            _l.grid(row=row_count, column=0, sticky=W, padx=0)
+            row_count += 1
+            self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
+
+    def doNDD(self, points):
+        x = []
+        y = []
+        i = 0
+        while i < len(points):
+            x.append(float(points[i][0].get()))
+            y.append(float(points[i][1].get()))
+            i += 1
+
+        coefs = list(newtdd(x, y))
+        exponent = len(coefs) - 1
+        P = ""
+        i = 0
+        while len(coefs) > 0:
+            if i > 0:
+                P += "%+f" % coefs.pop()
+            else:
+                P += "%f" % coefs.pop()
+            if len(coefs) > 0:
+                P += "x"
+                if len(coefs) > 1:
+                    P += "^" + str(exponent)
+                    exponent -= 1
+            i += 1
+
+        self.text_box.insert(END, "P(x) = " + P + "\n")
 
     def chebyWindow(self):
         # create Chebyshev window
