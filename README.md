@@ -47,5 +47,5 @@ C. Differentiation and Integration
 	 - Newton-Codes - Trapezoidal, Simpson -- DONE
 	 - Romberg -- DONE
 	 - Quadrature
-     - Adaptive
-		 - Gaussian
+      - Adaptive
+      - Gaussian
