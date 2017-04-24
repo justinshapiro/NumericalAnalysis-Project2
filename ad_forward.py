@@ -1,6 +1,7 @@
 '''
     Implements Forward Automatic Differentiation
     ADForwardFloat class found at http://blog.tombowles.me.uk/2014/09/10/ad-algorithmicautomatic-differentiation/
+    Implemented division based on Professor Lodwick's notes
     Using this ADForwardFloat class that provides some "overloading" of operators we can implement forward AD
 
 '''
