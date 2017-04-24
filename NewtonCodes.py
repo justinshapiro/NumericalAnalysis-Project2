@@ -58,7 +58,7 @@ def simpson(f, a, b, n):
 
 # romberg method
  # -------------------------------------
- def romberg(f,a,b,n):
+def romberg(f,a,b,n):
     # initialize romberg matrix
     steps = []
     R      = np.zeros((n,n))
@@ -95,9 +95,11 @@ serr = (abs(asol-simp)/asol)*100
 rerr = (abs(asol-romb)/asol)*100
 # print results
 
+'''
 print '\nMethod            Solution    Error'
 print '----------------------------------------------'
 print 'analytical     %12.6f   %6.3f'  % (asol,0),'%'
 print 'trapezoid      %12.6f   %6.3f'  % (trap,terr),'%'
 print 'simpson        %12.6f   %6.3f'  % (simp,serr),'%'
-print 'romberg        %12.6f   %6.3f'  % (romb,rerr),'%
+print 'romberg        %12.6f   %6.3f'  % (romb,rerr),'%'
+'''

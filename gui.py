@@ -51,6 +51,8 @@ from scipy.interpolate import lagrange
 from NDD import *
 from sympy import *
 from ad_forward import *
+from ad import adnumber
+from NewtonCodes import intf, trapezoid, simpson, romberg
 
 class App(Frame):
     def __init__(self):
@@ -116,10 +118,10 @@ class App(Frame):
         self.intFrame.pack(expand = 'yes')
 
         # Differentiation and Integration Buttons
-        self.differenceBtn = Button(self.diffFrame, text = "Difference Methods")
+        self.differenceBtn = Button(self.diffFrame, text = "Difference Methods", command = self.diffMethodsWindow)
         self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20)
         self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation", command = self.adWindow)
-        self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20)
+        self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20, command = self.nCodesWindow)
         self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20)
         self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20)
         self.differenceBtn.grid(row = 0, column = 0)
@@ -1180,19 +1182,153 @@ class App(Frame):
                     plt.title("RMSE over Iterations")
                     plt.show()
 
+    def diffMethodsWindow(self):
+        # create Chebyshev window
+        diffMethods = Toplevel()
+        diffMethods.title("Difference Methods")
+        diffMethods.resizable(0,0)
+        mainFrame = Frame(diffMethods)
+        mainFrame.pack(fill = "both")
+
+        prompt1 = "How many x values do you have?: "
+        l = Label(mainFrame, text=prompt1)
+        l.grid(row=0, column=0, sticky=W, padx=0)
+        aDiff = Entry(mainFrame, width=3)
+        aDiff.grid(row=0, column=1, sticky=W, padx=25)
+
+        # "Enter Values" Button
+        eBtn = Button(mainFrame, text="Enter Values", command=lambda: moreDiffMethods(int(aDiff.get())))
+        eBtn.grid(row=1, column=0, pady=10, sticky=W)
+
+        def moreDiffMethods(num_x):
+            l.destroy()
+            aDiff.destroy()
+            eBtn.destroy()
+
+            # f(x) Label
+            Label(mainFrame, text = "Enter f(x)").grid(row = 0, sticky = W)
+
+            # f(g) label and entry box
+            fLabel = Label(mainFrame, text = "f(x):").grid(row = 1, sticky = W)
+            fEnt = Entry(mainFrame, width = 50)
+            fEnt.grid(row = 1, sticky = W, padx = 30)
+
+            row_count = 2
+
+            x_values = []
+            i = 0
+            while i < num_x:
+                x_values.append([""])
+                # x_i
+                Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, sticky=W, padx=0)
+                x_values[i] = Entry(mainFrame, width=3)
+                x_values[i].grid(row=row_count, sticky=W, padx=30)
+                row_count += 1
+                i += 1
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text = "Submit", command=lambda: doDiffMethods(fEnt.get(), x_values))
+            submitBtn.grid(row = row_count, pady = 10)
+
+            resultFrame = Frame(diffMethods)
+            resultFrame.pack(fill="x")
+
+            scrollbar = Scrollbar(resultFrame)
+            scrollbar.pack(side=RIGHT, fill=Y)
+
+            diffTextBox = Text(resultFrame)
+            diffTextBox.pack(fill="both")
+            diffTextBox.config(yscrollcommand=scrollbar.set)
+            scrollbar.config(command=diffTextBox.yview)
+
+            Button(diffMethods, text = "Exit Window", command = lambda: diffMethods.destroy()).pack(fill = X)
+
+            def doDiffMethods(f, xValues):
+                f = format(0, f, ['x'])
+
+                i = 0
+                all_x = []
+                while i < len(xValues):
+                    all_x.append([""])
+                    all_x[i] = xValues[i].get()
+                    i += 1
+
+                x = []
+                i = 0
+                while i < len(all_x):
+                    x.append(adnumber(float(all_x[i])))
+                    i += 1
+
+                def function(x):
+                    return eval(f)
+
+                def analytic(x):
+                    f = function(x).d(x)
+                    return f
+
+                def forward(x, h):
+                    return (function(x + h) - function(x)) / h
+
+
+                def backward(x, h):
+                    return (function(x) - function(x - h)) / h
+
+
+                def central(x, h):
+                    return (function(x + h) - function(x - h)) / (2 * h)
+
+                def error_forward(y):
+                    f = abs((forward(1, y) - analytic(1)) / analytic(1))
+                    return f
+
+
+                def error_backward(y):
+                    f = abs(backward(1, y) - analytic(1)) / analytic(1)
+                    return f
+
+
+                def error_central(y):
+                    f = abs(central(1, y) - analytic(1)) / analytic(1)
+                    return f
+
+                diffTextBox.insert(END, "forward :" + str(float(forward(1.0, x[len(x) - 1]))) + "\n")
+                diffTextBox.insert(END, "backward: " + str(float(backward(1.0, x[len(x) - 1]))) + "\n")
+                diffTextBox.insert(END, "central: " + str(float(central(1.0, x[len(x) - 1]))) + "\n")
+                diffTextBox.insert(END, "analytic: " + str(float(analytic(adnumber(1.0)))) + '\n')
+
+                # Having Troubles PLOTTING please help :D
+
+                '''
+                values = []
+                i = 0
+                while i < len(x):
+                    values.append(function(x[i]))
+                    i += 1
+
+                dValues = []
+                i = 0
+                while i < len(x):
+                    dValues.append(analytic(x[i]))
+                    i += 1
+
+                print x
+                print values
+                print dValues
+                '''
+
     def adWindow(self):
         # create Chebyshev window
         ad = Toplevel()
-        ad.title("Chebyshev")
+        ad.title("Automatic Differentiation")
         ad.resizable(0,0)
         mainFrame = Frame(ad)
         mainFrame.pack(fill = "both")
 
         # f(x) Label
-        Label(mainFrame, text = "Enter f(x)").grid(row = 0, sticky = W)
+        Label(mainFrame, text = "Enter f(g)").grid(row = 0, sticky = W)
 
         # f(g) label and entry box
-        Label(mainFrame, text = "f(x), ex: ln(g), e^g, tan(g) + 2*x").grid(row = 1, sticky = W, padx = 30)
+        Label(mainFrame, text = "f(g), ex: ln(g), e^g, tan(g) + 2*x").grid(row = 1, sticky = W, padx = 30)
         fLabel = Label(mainFrame, text = "f(g):").grid(row = 2, sticky = W)
         fEnt = Entry(mainFrame, width = 50)
         fEnt.grid(row = 2, sticky = W, padx = 30)
@@ -1237,6 +1373,78 @@ class App(Frame):
             adTextBox.insert(END, 'g(x), g\'(x) at x =' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
             adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
             adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n')
+
+
+    def nCodesWindow(self):
+        # create Chebyshev window
+        nCodes = Toplevel()
+        nCodes.title("Difference Methods")
+        nCodes.resizable(0,0)
+        mainFrame = Frame(nCodes)
+        mainFrame.pack(fill = "both")
+
+        # f label and entry box
+        fLabel = Label(mainFrame, text = "f(x):").grid(row = 0, sticky = W)
+        fEnt = Entry(mainFrame, width = 40)
+        fEnt.grid(row = 0, sticky = W, padx = 50)
+
+        #limits of integration
+
+        # a label and entry box
+        Label(mainFrame, text = "Limits of integration:").grid(row = 1, sticky = W)
+        aLabel = Label(mainFrame, text = "a:").grid(row = 2, sticky = W)
+        a = Entry(mainFrame, width = 40)
+        a.grid(row = 2, sticky = W, padx = 50)
+        # b label and entry box
+        bLabel = Label(mainFrame, text = "b:").grid(row = 3, sticky = W)
+        b = Entry(mainFrame, width = 40)
+        b.grid(row = 3, sticky = W, padx = 50)
+
+        # number of intervals label and entry box
+        nLabel = Label(mainFrame, text = "Number of Intervals:").grid(row = 4, sticky = W)
+        n = Entry(mainFrame, width = 40)
+        n.grid(row = 4, sticky = W, padx = 50)
+
+        # Submit Button
+        submitBtn = Button(mainFrame, text = "Submit", command = lambda: doNCodes(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+        submitBtn.grid(row = 6, pady = 10)
+
+        resultFrame = Frame(nCodes)
+        resultFrame.pack(fill="x")
+
+        scrollbar = Scrollbar(resultFrame)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        nCodesTextBox = Text(resultFrame)
+        nCodesTextBox.pack(fill="both")
+        nCodesTextBox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=nCodesTextBox.yview)
+
+        Button(nCodes, text = "Exit Window", command = lambda: nCodes.destroy()).pack(fill = X)
+
+        def doNCodes(func, a, b, n):
+            func = format(0, func, ['x'])
+            def f(x):
+                return eval(func)
+
+            asol = intf(a,b)
+
+            # call integration routines
+            trap = trapezoid(f,a,b,n)
+            simp = simpson(f,a,b,n)
+            romb = romberg(f,a,b,n)
+            # get integration error
+            terr = (abs(asol-trap)/asol)*100
+            serr = (abs(asol-simp)/asol)*100
+            rerr = (abs(asol-romb)/asol)*100
+            # print results
+
+            nCodesTextBox.insert(END, '\nMethod            Solution    Error\n' )
+            nCodesTextBox.insert(END, '----------------------------------------------\n' )
+            nCodesTextBox.insert(END, 'analytical     %12.6f   %6.3f\n'  % (asol,0),'%' + '\n' )
+            nCodesTextBox.insert(END, 'trapezoid      %12.6f   %6.3f\n'  % (trap,terr),'%' + '\n' )
+            nCodesTextBox.insert(END, 'simpson        %12.6f   %6.3f\n'  % (simp,serr),'%' + '\n' )
+            nCodesTextBox.insert(END, 'romberg        %12.6f   %6.3f\n'  % (romb,rerr),'%' + '\n' )
 
 
     def start(self):
