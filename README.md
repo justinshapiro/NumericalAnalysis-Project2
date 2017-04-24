@@ -42,9 +42,10 @@ C. Differentiation and Integration
  - Differentiation
 	 - Difference Methods
 	 - Extrapolation
-	 - Automatic Differentiation (professor's notes/references)
+	 - Automatic Differentiation (professor's notes/references) -- DONE
  - Integration
-	 - Newton-Codes - Trapezoidal, Simpson
-	 - Romberg
-	 - Adaptive
+	 - Newton-Codes - Trapezoidal, Simpson -- DONE
+	 - Romberg -- DONE
+	 - Quadrature
+     - Adaptive
 		 - Gaussian
