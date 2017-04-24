@@ -50,6 +50,7 @@ from scipy import interpolate, linalg
 from scipy.interpolate import lagrange
 from NDD import *
 from sympy import *
+from ad_forward import *
 
 class App(Frame):
     def __init__(self):
@@ -117,7 +118,7 @@ class App(Frame):
         # Differentiation and Integration Buttons
         self.differenceBtn = Button(self.diffFrame, text = "Difference Methods")
         self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20)
-        self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation")
+        self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation", command = self.adWindow)
         self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20)
         self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20)
         self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20)
@@ -1178,6 +1179,65 @@ class App(Frame):
                     plt.ylabel("RMSE")
                     plt.title("RMSE over Iterations")
                     plt.show()
+
+    def adWindow(self):
+        # create Chebyshev window
+        ad = Toplevel()
+        ad.title("Chebyshev")
+        ad.resizable(0,0)
+        mainFrame = Frame(ad)
+        mainFrame.pack(fill = "both")
+
+        # f(x) Label
+        Label(mainFrame, text = "Enter f(x)").grid(row = 0, sticky = W)
+
+        # f(g) label and entry box
+        Label(mainFrame, text = "f(x), ex: ln(g), e^g, tan(g) + 2*x").grid(row = 1, sticky = W, padx = 30)
+        fLabel = Label(mainFrame, text = "f(g):").grid(row = 2, sticky = W)
+        fEnt = Entry(mainFrame, width = 50)
+        fEnt.grid(row = 2, sticky = W, padx = 30)
+
+        # g(x) label and entry box
+        Label(mainFrame, text = "g(x), ex: 2*x*x*x + 4*x + 5").grid(row = 3, sticky = W, padx = 30)
+        gLabel = Label(mainFrame, text = "g(x):").grid(row = 4, sticky = W)
+        gEnt = Entry(mainFrame, width = 50)
+        gEnt.grid(row = 4, sticky = W, padx = 30)
+
+        # x label and entry box
+        xLabel = Label(mainFrame, text="x = ").grid(row=5, sticky=W)
+        xEnt = Entry(mainFrame, width=50)
+        xEnt.grid(row=5, sticky=W, padx = 30)
+
+        # Submit Button
+        submitBtn = Button(mainFrame, text = "Submit", command=lambda: doAD(fEnt.get(), gEnt.get(), xEnt.get()))
+        submitBtn.grid(row = 6, pady = 10)
+
+        resultFrame = Frame(ad)
+        resultFrame.pack(fill="x")
+
+        scrollbar = Scrollbar(resultFrame)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        adTextBox = Text(resultFrame)
+        adTextBox.pack(fill="both")
+        adTextBox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=adTextBox.yview)
+
+        Button(ad, text = "Exit Window", command = lambda: ad.destroy()).pack(fill = X)
+
+        def doAD(f, g, x):
+            x = float(x)
+            g = format(0, g, ['x'])
+            autoDiff = forwardAutoDiff(format(0, f, ['g']), g, x)
+            gValues = float(autoDiff.calcG()), float(autoDiff.g_deriv())
+            result = (autoDiff.calcF(), autoDiff.f_deriv())
+
+            adTextBox.insert(END, 'x = ' + str(float(autoDiff.x)) + '\n')
+            adTextBox.insert(END, 'g(x) = ' + str(autoDiff.g) + '\n')
+            adTextBox.insert(END, 'g(x), g\'(x) at x =' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
+            adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
+            adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n')
+
 
     def start(self):
         self.root.mainloop()
