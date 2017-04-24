@@ -1,3 +1,4 @@
+
 import numpy as np
 
 
@@ -15,7 +16,7 @@ b = 0
 # input number of intervals
 n =2
 
-# -------------------------------------------------
+# ---------------------------------------------------
 
 # analytical solution
 def intf(a,b):
@@ -82,7 +83,7 @@ def simpson(f, a, b, n):
             R[j,i] = r1 + k*(r1 - r0)
     romb = R[n-1,n-1]
     return romb
-#-------------------------------------
+#--------------------------------------------
 
 # call integration routines
 trap = trapezoid(f,a,b,n)
@@ -95,7 +96,7 @@ rerr = (abs(asol-romb)/asol)*100
 # print results
 
 print '\nMethod            Solution    Error'
-print '--------------------------------------'
+print '----------------------------------------------'
 print 'analytical     %12.6f   %6.3f'  % (asol,0),'%'
 print 'trapezoid      %12.6f   %6.3f'  % (trap,terr),'%'
 print 'simpson        %12.6f   %6.3f'  % (simp,serr),'%'
