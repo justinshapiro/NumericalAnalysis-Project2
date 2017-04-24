@@ -51,7 +51,6 @@ from scipy.interpolate import lagrange
 from NDD import *
 from sympy import *
 from ad_forward import *
-from ad import adnumber
 from NewtonCodes import intf, trapezoid, simpson, romberg
 
 class App(Frame):
@@ -123,7 +122,7 @@ class App(Frame):
         self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation", command = self.adWindow)
         self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20, command = self.nCodesWindow)
         self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20, command = self.rombergWindow)
-        self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20, command = self.adaptWindow)
+        self.adaptBtn = Button(self.intFrame, text = "Quadrature", width=20, command = self.quadraWindow)
         self.differenceBtn.grid(row = 0, column = 0)
         self.extrapBtn.grid(row = 0, column = 1)
         self.autoDiffBtn.grid(row = 0, column = 2)
@@ -1316,6 +1315,16 @@ class App(Frame):
                 print dValues
                 '''
 
+    def extrapWindow(self):
+        # create Extrapolation window
+        extrap = Toplevel()
+        extrap.title("Extrapolation")
+        extrap.resizable(0,0)
+        mainFrame = Frame(extrap)
+        mainFrame.pack(fill = "both")
+
+        Button(extrap, text = "Exit Window", command = lambda: extrap.destroy()).pack(fill="both")
+
     def adWindow(self):
         # create Automatic Differentiation window
         ad = Toplevel()
@@ -1401,9 +1410,9 @@ class App(Frame):
         b.grid(row = 3, sticky = W, padx = 50)
 
         # number of intervals label and entry box
-        nLabel = Label(mainFrame, text = "Number of Intervals:").grid(row = 4, sticky = W)
-        n = Entry(mainFrame, width = 40)
-        n.grid(row = 4, sticky = W, padx = 50)
+        nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
+        n = Entry(mainFrame, width = 35)
+        n.grid(row = 4, sticky = W, padx = 80)
 
         # Submit Button
         submitBtn = Button(mainFrame, text = "Submit", command = lambda: doNCodes(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
@@ -1432,11 +1441,9 @@ class App(Frame):
             # call integration routines
             trap = trapezoid(f,a,b,n)
             simp = simpson(f,a,b,n)
-            romb = romberg(f,a,b,n)
             # get integration error
             terr = (abs(asol-trap)/asol)*100
             serr = (abs(asol-simp)/asol)*100
-            rerr = (abs(asol-romb)/asol)*100
             # print results
 
             nCodesTextBox.insert(END, '\nMethod            Solution    Error\n' )
@@ -1444,37 +1451,180 @@ class App(Frame):
             nCodesTextBox.insert(END, 'analytical     %12.6f   %6.3f\n'  % (asol,0),'%' + '\n' )
             nCodesTextBox.insert(END, 'trapezoid      %12.6f   %6.3f\n'  % (trap,terr),'%' + '\n' )
             nCodesTextBox.insert(END, 'simpson        %12.6f   %6.3f\n'  % (simp,serr),'%' + '\n' )
-            nCodesTextBox.insert(END, 'romberg        %12.6f   %6.3f\n'  % (romb,rerr),'%' + '\n' )
-
-    def extrapWindow(self):
-        # create Extrapolation window
-        extrap = Toplevel()
-        extrap.title("Extrapolation")
-        extrap.resizable(0,0)
-        mainFrame = Frame(extrap)
-        mainFrame.pack(fill = "both")
-
-        Button(extrap, text = "Exit Window", command = lambda: extrap.destroy()).pack(fill="both")
 
     def rombergWindow(self):
         # create romberg window
-        romberg = Toplevel()
-        romberg.title("Romberg")
-        romberg.resizable(0,0)
-        mainFrame = Frame(romberg)
+        romb = Toplevel()
+        romb.title("Romberg")
+        romb.resizable(0,0)
+        mainFrame = Frame(romb)
         mainFrame.pack(fill = "both")
 
-        Button(romberg, text = "Exit Window", command = lambda: romberg.destroy()).pack(fill="both")
+        # f label and entry box
+        fLabel = Label(mainFrame, text = "f(x):").grid(row = 0, sticky = W)
+        fEnt = Entry(mainFrame, width = 40)
+        fEnt.grid(row = 0, sticky = W, padx = 50)
 
-    def adaptWindow(self):
+        #limits of integration
+
+        # a label and entry box
+        Label(mainFrame, text = "Limits of integration:").grid(row = 1, sticky = W)
+        aLabel = Label(mainFrame, text = "a:").grid(row = 2, sticky = W)
+        a = Entry(mainFrame, width = 40)
+        a.grid(row = 2, sticky = W, padx = 50)
+        # b label and entry box
+        bLabel = Label(mainFrame, text = "b:").grid(row = 3, sticky = W)
+        b = Entry(mainFrame, width = 40)
+        b.grid(row = 3, sticky = W, padx = 50)
+
+        # number of intervals label and entry box
+        nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
+        n = Entry(mainFrame, width = 35)
+        n.grid(row = 4, sticky = W, padx = 80)
+
+        # Submit Button
+        submitBtn = Button(mainFrame, text = "Submit", command = lambda: doRomberg(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+        submitBtn.grid(row = 6, pady = 10)
+
+        resultFrame = Frame(romb)
+        resultFrame.pack(fill="x")
+
+        scrollbar = Scrollbar(resultFrame)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        romTextBox = Text(resultFrame)
+        romTextBox.pack(fill="both")
+        romTextBox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=romTextBox.yview)
+
+        Button(romb, text = "Exit Window", command = lambda: romb.destroy()).pack(fill="both")
+
+        def doRomberg(func, a, b, n):
+            func = format(0, func, ['x'])
+            def f(x):
+                return eval(func)
+
+            asol = intf(a,b)
+
+            # call integration routine
+            romb = romberg(f,a,b,n)
+            # get integration error
+            rerr = (abs(asol-romb)/asol)*100
+            # print results
+
+            romTextBox.insert(END, '\nMethod            Solution    Error\n' )
+            romTextBox.insert(END, '----------------------------------------------\n' )
+            romTextBox.insert(END, 'analytical     %12.6f   %6.3f\n'  % (asol,0),'%' + '\n' )
+            romTextBox.insert(END, 'romberg        %12.6f   %6.3f\n'  % (romb,rerr),'%' + '\n' )
+
+    def quadraWindow(self):
         # create Adaptive window
-        adapt = Toplevel()
-        adapt.title("Adaptive")
-        adapt.resizable(0,0)
-        mainFrame = Frame(adapt)
-        mainFrame.pack(fill = "both")
+        quad = Toplevel()
+        quad.title("Quadrature")
+        quad.resizable(0,0)
 
-        Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
+        Button(quad, text = "Adaptive", width = 40, command = lambda: adaptiveWindow()).pack(fill = "both")
+        Button(quad, text = "Gaussian", command = lambda: gaussianWindow()).pack(fill = "both")
+        Button(quad, text = "Exit Window", command = lambda: quad.destroy()).pack(fill="both")
+
+        def adaptiveWindow():
+            adapt = Toplevel()
+            adapt.title("Adaptive Quadrature")
+            adapt.resizable(0,0)
+            mainFrame = Frame(adapt)
+            mainFrame.pack(fill = "both")
+
+            # f label and entry box
+            fLabel = Label(mainFrame, text = "f(x):").grid(row = 0, sticky = W)
+            fEnt = Entry(mainFrame, width = 40)
+            fEnt.grid(row = 0, sticky = W, padx = 50)
+
+            #limits of integration
+
+            # a label and entry box
+            Label(mainFrame, text = "Limits of integration:").grid(row = 1, sticky = W)
+            aLabel = Label(mainFrame, text = "a:").grid(row = 2, sticky = W)
+            a = Entry(mainFrame, width = 40)
+            a.grid(row = 2, sticky = W, padx = 50)
+            # b label and entry box
+            bLabel = Label(mainFrame, text = "b:").grid(row = 3, sticky = W)
+            b = Entry(mainFrame, width = 40)
+            b.grid(row = 3, sticky = W, padx = 50)
+
+            # number of intervals label and entry box
+            nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
+            n = Entry(mainFrame, width = 35)
+            n.grid(row = 4, sticky = W, padx = 80)
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doAdaptive(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+            submitBtn.grid(row = 6, pady = 10)
+
+            resultFrame = Frame(adapt)
+            resultFrame.pack(fill="x")
+
+            scrollbar = Scrollbar(resultFrame)
+            scrollbar.pack(side=RIGHT, fill=Y)
+
+            adaptTextBox = Text(resultFrame)
+            adaptTextBox.pack(fill="both")
+            adaptTextBox.config(yscrollcommand=scrollbar.set)
+            scrollbar.config(command=adaptTextBox.yview)
+
+            Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
+
+            def doAdaptive(f, a, b, n):
+                #do stuff here
+                
+        def gaussianWindow():
+            gauss = Toplevel()
+            gauss.title("Gaussian Quadrature")
+            gauss.resizable(0,0)
+            mainFrame = Frame(gauss)
+            mainFrame.pack(fill = "both")
+
+            # f label and entry box
+            fLabel = Label(mainFrame, text = "f(x):").grid(row = 0, sticky = W)
+            fEnt = Entry(mainFrame, width = 40)
+            fEnt.grid(row = 0, sticky = W, padx = 50)
+
+            #limits of integration
+
+            # a label and entry box
+            Label(mainFrame, text = "Limits of integration:").grid(row = 1, sticky = W)
+            aLabel = Label(mainFrame, text = "a:").grid(row = 2, sticky = W)
+            a = Entry(mainFrame, width = 40)
+            a.grid(row = 2, sticky = W, padx = 50)
+            # b label and entry box
+            bLabel = Label(mainFrame, text = "b:").grid(row = 3, sticky = W)
+            b = Entry(mainFrame, width = 40)
+            b.grid(row = 3, sticky = W, padx = 50)
+
+            # number of intervals label and entry box
+            nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
+            n = Entry(mainFrame, width = 35)
+            n.grid(row = 4, sticky = W, padx = 80)
+
+            # Submit Button
+            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doGauss(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+            submitBtn.grid(row = 6, pady = 10)
+
+            resultFrame = Frame(gauss)
+            resultFrame.pack(fill="x")
+
+            scrollbar = Scrollbar(resultFrame)
+            scrollbar.pack(side=RIGHT, fill=Y)
+
+            gaussTextBox = Text(resultFrame)
+            gaussTextBox.pack(fill="both")
+            gaussTextBox.config(yscrollcommand=scrollbar.set)
+            scrollbar.config(command=gaussTextBox.yview)
+
+            Button(gauss, text = "Exit Window", command = lambda: gauss.destroy()).pack(fill="both")
+
+            def doGauss(f, a, b, n):
+                #do stuff here
+
 
     def start(self):
         self.root.mainloop()
