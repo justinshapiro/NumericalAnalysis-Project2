@@ -35,7 +35,7 @@ B. Least Squares
     - QR Factorization -- DONE
  - Nonlinear
     - Gauss-Newton -- DONE
-    - Levenberg-Marquardt
+    - Levenberg-Marquardt -- DONE
 
 C. Differentiation and Integration
 
