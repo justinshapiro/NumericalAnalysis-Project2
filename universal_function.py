@@ -58,12 +58,7 @@ def format(_type, _str, var_list):
         _str = _str.replace("tan**-1", "math.atan")
         _str = _str.replace("tan**(-1)", "math.atan")
         _str = _str.replace("log", "math.log10")
-        if "ln" in _str:
-            idx = _str.find("ln")
-            while _str[idx] != ')':
-                idx += 1
-            _str = _str[:idx] + ",2" + _str[idx:]
-            _str = _str.replace("ln", "math.log")
+        _str = _str.replace("ln", "math.log")
 
         # handle factorial expressions
         if '!' in _str:

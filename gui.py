@@ -53,7 +53,7 @@ from sympy import *
 from sympy.parsing.sympy_parser import parse_expr
 from ad_forward import *
 from ad import adnumber
-from NewtonCodes import intf, trapezoid, simpson, romberg
+from NewtonCodes import *
 
 class App(Frame):
     def __init__(self):
@@ -61,7 +61,7 @@ class App(Frame):
         self.root.s = Style()
         self.root.geometry("420x300")
         self.root.resizable(1, 1)  # made resizable for now, may need to increase geometry
-        self.root.s.theme_use("clam")
+        self.root.s.theme_use("vista")
         self.root.title("Numerical Analysis - Project 2")
 
         Frame.__init__(self, self.root)
@@ -122,7 +122,7 @@ class App(Frame):
         self.differenceBtn = Button(self.diffFrame, text = "Difference Methods", command = self.diffMethodsWindow)
         self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20, command = self.extrapWindow)
         self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation", command = self.adWindow)
-        self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20, command = self.nCodesWindow)
+        self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Cotes", width=20, command = self.nCodesWindow)
         self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20, command = self.rombergWindow)
         self.adaptBtn = Button(self.intFrame, text = "Quadrature", width=20, command = self.quadraWindow)
         self.differenceBtn.grid(row = 0, column = 0)
@@ -1394,7 +1394,7 @@ class App(Frame):
     def nCodesWindow(self):
         # create Newton Codes window
         nCodes = Toplevel()
-        nCodes.title("Newto Codes")
+        nCodes.title("Newton-Cotes")
         nCodes.resizable(0,0)
         mainFrame = Frame(nCodes)
         mainFrame.pack(fill = "both")
@@ -1404,7 +1404,7 @@ class App(Frame):
         fEnt = Entry(mainFrame, width = 40)
         fEnt.grid(row = 0, sticky = W, padx = 50)
 
-        #limits of integration
+        # limits of integration
 
         # a label and entry box
         Label(mainFrame, text = "Limits of integration:").grid(row = 1, sticky = W)
@@ -1439,25 +1439,22 @@ class App(Frame):
         Button(nCodes, text = "Exit Window", command = lambda: nCodes.destroy()).pack(fill = X)
 
         def doNCodes(func, a, b, n):
-            func = format(0, func, ['x'])
-            def f(x):
-                return eval(func)
-
-            asol = intf(a,b)
+            fstr = str(func)
+            a = float(a)
+            b = float(b)
+            n = int(n)
 
             # call integration routines
-            trap = trapezoid(f,a,b,n)
-            simp = simpson(f,a,b,n)
-            # get integration error
-            terr = (abs(asol-trap)/asol)*100
-            serr = (abs(asol-simp)/asol)*100
-            # print results
+            trap = trapezoid(fstr, a, b, n)
+            simp = simpson(fstr, a, b, n)
+            terr = trap_error(fstr, a, b)
+            serr = simp_error(fstr, a, b)
 
+            # print results
             nCodesTextBox.insert(END, '\nMethod            Solution    Error\n' )
             nCodesTextBox.insert(END, '----------------------------------------------\n' )
-            nCodesTextBox.insert(END, 'analytical     %12.6f   %6.3f\n'  % (asol,0),'%' + '\n' )
-            nCodesTextBox.insert(END, 'trapezoid      %12.6f   %6.3f\n'  % (trap,terr),'%' + '\n' )
-            nCodesTextBox.insert(END, 'simpson        %12.6f   %6.3f\n'  % (simp,serr),'%' + '\n' )
+            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f\n'  % (trap, terr),'%' + '\n' )
+            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f\n'  % (simp, serr),'%' + '\n' )
 
     def rombergWindow(self):
         # create romberg window
@@ -1507,22 +1504,11 @@ class App(Frame):
         Button(romb, text = "Exit Window", command = lambda: romb.destroy()).pack(fill="both")
 
         def doRomberg(func, a, b, n):
-            func = format(0, func, ['x'])
-            def f(x):
-                return eval(func)
-
-            asol = intf(a,b)
-
-            # call integration routine
-            romb = romberg(f,a,b,n)
-            # get integration error
-            rerr = (abs(asol-romb)/asol)*100
-            # print results
-
-            romTextBox.insert(END, '\nMethod            Solution    Error\n' )
-            romTextBox.insert(END, '----------------------------------------------\n' )
-            romTextBox.insert(END, 'analytical     %12.6f   %6.3f\n'  % (asol,0),'%' + '\n' )
-            romTextBox.insert(END, 'romberg        %12.6f   %6.3f\n'  % (romb,rerr),'%' + '\n' )
+            fstr = str(func)
+            a = float(a)
+            b = float(b)
+            romb = romberg(fstr, a, b, n)
+            romTextBox.insert(END, 'Romberg:        %12.6f\n' % romb,'%' + '\n' )
 
     def quadraWindow(self):
         # create Adaptive window
