@@ -1,7 +1,3 @@
-#Methods for Numerical Integration
-
-
-
 import numpy as np
 
 
@@ -18,6 +14,7 @@ b = 0
 
 # input number of intervals
 n =2
+
 # -------------------------------------------------
 
 # analytical solution
@@ -40,7 +37,6 @@ def trapezoid(f, a, b, n):
 
 
 # -------------------------------------
-
 # simpson
 # -------------------------------------
 def simpson(f, a, b, n):
@@ -59,45 +55,15 @@ def simpson(f, a, b, n):
     simp = (h / 3.0) * simp
     return simp
 
-# romberg method
-# -------------------------------------
-def romberg(f,a,b,n):
-    # initialize romberg matrix
-    steps = []
-    R      = np.zeros((n,n))
-    R[0,0] = 0.5*(b-a)*(f(a)+f(b))
-    # fill first column of romberg matrix
-    for i in range(1,n):
-        pts  = 2**i
-        h    = (b-a)/float(pts)
-        steps.append(h)
-        psum = 0
-        for j in range(1, pts):
-            if j % 2 != 0:
-                psum += f(a + j*h)
-        # populate matrix
-        R[i,0] = 0.5*R[i-1,0] + h*psum
-    # get integral from romberg matrix
-    for i in range(1,n):
-        for j in range(i,n):
-            r1 = R[j,i-1]
-            r0 = R[j-1,i-1]
-            k  = 1.0/(4.0**i-1)
-            R[j,i] = r1 + k*(r1 - r0)
-    romb = R[n-1,n-1]
-    return romb
-# -------------------------------------
 
 
 # call integration routines
 trap = trapezoid(f,a,b,n)
 simp = simpson(f,a,b,n)
-romb = romberg(f,a,b,n)
 
 # get integration error
 terr = (abs(asol-trap)/asol)*100
 serr = (abs(asol-simp)/asol)*100
-rerr = (abs(asol-romb)/asol)*100
 
 # print results
 
@@ -106,4 +72,3 @@ print '--------------------------------------'
 print 'analytical     %12.6f   %6.3f'  % (asol,0),'%'
 print 'trapezoid      %12.6f   %6.3f'  % (trap,terr),'%'
 print 'simpson        %12.6f   %6.3f'  % (simp,serr),'%'
-print 'romberg        %12.6f   %6.3f'  % (romb,rerr),'%'
