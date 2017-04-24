@@ -1,6 +1,7 @@
 '''
     Implements Forward Automatic Differentiation
     ADForwardFloat class found at http://blog.tombowles.me.uk/2014/09/10/ad-algorithmicautomatic-differentiation/
+    Also uses Package: ad 1.3.2 and can be installed using 'pip install ad' 'pip2 install ad' for python 2 
     Implemented division based on Professor Lodwick's notes
     Using this ADForwardFloat class that provides some "overloading" of operators we can implement forward AD
 

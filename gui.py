@@ -119,11 +119,11 @@ class App(Frame):
 
         # Differentiation and Integration Buttons
         self.differenceBtn = Button(self.diffFrame, text = "Difference Methods", command = self.diffMethodsWindow)
-        self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20)
+        self.extrapBtn = Button(self.diffFrame, text = "Extrapolation", width=20, command = self.extrapWindow)
         self.autoDiffBtn = Button(self.diffFrame, text = "Automatic Differentiation", command = self.adWindow)
         self.newtonCodesBtn = Button(self.intFrame, text = "Newton-Codes", width=20, command = self.nCodesWindow)
-        self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20)
-        self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20)
+        self.rombergBtn = Button(self.intFrame, text = "Romberg", width=20, command = self.rombergWindow)
+        self.adaptBtn = Button(self.intFrame, text = "Adaptive", width=20, command = self.adaptWindow)
         self.differenceBtn.grid(row = 0, column = 0)
         self.extrapBtn.grid(row = 0, column = 1)
         self.autoDiffBtn.grid(row = 0, column = 2)
@@ -1183,7 +1183,7 @@ class App(Frame):
                     plt.show()
 
     def diffMethodsWindow(self):
-        # create Chebyshev window
+        # create Difference Methods window
         diffMethods = Toplevel()
         diffMethods.title("Difference Methods")
         diffMethods.resizable(0,0)
@@ -1317,7 +1317,7 @@ class App(Frame):
                 '''
 
     def adWindow(self):
-        # create Chebyshev window
+        # create Automatic Differentiation window
         ad = Toplevel()
         ad.title("Automatic Differentiation")
         ad.resizable(0,0)
@@ -1368,17 +1368,17 @@ class App(Frame):
             gValues = float(autoDiff.calcG()), float(autoDiff.g_deriv())
             result = (autoDiff.calcF(), autoDiff.f_deriv())
 
-            adTextBox.insert(END, 'x = ' + str(float(autoDiff.x)) + '\n')
+            adTextBox.insert(END, '\nx = ' + str(x) + '\n')
             adTextBox.insert(END, 'g(x) = ' + str(autoDiff.g) + '\n')
-            adTextBox.insert(END, 'g(x), g\'(x) at x =' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
+            adTextBox.insert(END, 'g(x), g\'(x) at x = ' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
             adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
             adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n')
 
 
     def nCodesWindow(self):
-        # create Chebyshev window
+        # create Newton Codes window
         nCodes = Toplevel()
-        nCodes.title("Difference Methods")
+        nCodes.title("Newto Codes")
         nCodes.resizable(0,0)
         mainFrame = Frame(nCodes)
         mainFrame.pack(fill = "both")
@@ -1446,6 +1446,35 @@ class App(Frame):
             nCodesTextBox.insert(END, 'simpson        %12.6f   %6.3f\n'  % (simp,serr),'%' + '\n' )
             nCodesTextBox.insert(END, 'romberg        %12.6f   %6.3f\n'  % (romb,rerr),'%' + '\n' )
 
+    def extrapWindow(self):
+        # create Extrapolation window
+        extrap = Toplevel()
+        extrap.title("Extrapolation")
+        extrap.resizable(0,0)
+        mainFrame = Frame(extrap)
+        mainFrame.pack(fill = "both")
+
+        Button(extrap, text = "Exit Window", command = lambda: extrap.destroy()).pack(fill="both")
+
+    def rombergWindow(self):
+        # create romberg window
+        romberg = Toplevel()
+        romberg.title("Romberg")
+        romberg.resizable(0,0)
+        mainFrame = Frame(romberg)
+        mainFrame.pack(fill = "both")
+
+        Button(romberg, text = "Exit Window", command = lambda: romberg.destroy()).pack(fill="both")
+
+    def adaptWindow(self):
+        # create Adaptive window
+        adapt = Toplevel()
+        adapt.title("Adaptive")
+        adapt.resizable(0,0)
+        mainFrame = Frame(adapt)
+        mainFrame.pack(fill = "both")
+
+        Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
 
     def start(self):
         self.root.mainloop()
