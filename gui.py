@@ -1198,12 +1198,12 @@ class App(Frame):
 
         # x Label
         xLabel = Label(mainFrame, text="x = ").grid(row=1, sticky=W)
-        xEnt = Entry(mainFrame, width=50)
+        xEnt = Entry(mainFrame, width=10)
         xEnt.grid(row=1, sticky=W, padx=30)
 
         # h Label
         hLabel = Label(mainFrame, text="h = ").grid(row=2, sticky=W)
-        hEnt = Entry(mainFrame, width=50)
+        hEnt = Entry(mainFrame, width=10)
         hEnt.grid(row=2, sticky=W, padx=30)
 
         # Submit Button
@@ -1260,12 +1260,12 @@ class App(Frame):
             f_error = forward(_fstr, x, h)
             b_error = backward(_fstr, x, h)
             c_error = centered(_fstr, x, h)
-            diffTextBox.insert(END, "Forward: " + str(f_error) + '\n')
-            diffTextBox.insert(END, "Backward: " + str(b_error) + '\n')
-            diffTextBox.insert(END, "Centered: " + str(c_error) + '\n\n')
-            diffTextBox.insert(END, "Forward Error: " + str(get_error("1/x", f_error, x)) + '\n')
-            diffTextBox.insert(END, "Backward Error: " + str(get_error("1/x", b_error, x)) + '\n')
-            diffTextBox.insert(END, "Centered Error: " + str(get_error("1/x", c_error, x)) + '\n')
+            diffTextBox.insert(END, "Two-Point Forward Difference: " + str(f_error) + '\n')
+            diffTextBox.insert(END, "Two-Point Backward Backward Difference: " + str(b_error) + '\n')
+            diffTextBox.insert(END, "Three-Point Centered Difference: " + str(c_error) + '\n\n')
+            diffTextBox.insert(END, "Forward DifferenceError: " + str(get_error("1/x", f_error, x)) + '\n')
+            diffTextBox.insert(END, "Backward Difference Error: " + str(get_error("1/x", b_error, x)) + '\n')
+            diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n')
 
     def extrapWindow(self):
         # create Extrapolation window
@@ -1275,7 +1275,62 @@ class App(Frame):
         mainFrame = Frame(extrap)
         mainFrame.pack(fill = "both")
 
-        Button(extrap, text = "Exit Window", command = lambda: extrap.destroy()).pack(fill="both")
+        # f(x) label and entry box
+        fLabel = Label(mainFrame, text="f(x) = ").grid(row=0, sticky=W)
+        fEnt = Entry(mainFrame, width=50)
+        fEnt.grid(row=0, column=1, sticky=W, padx=30)
+
+        # x Label
+        xLabel = Label(mainFrame, text="x = ").grid(row=1, sticky=W)
+        xEnt = Entry(mainFrame, width=10)
+        xEnt.grid(row=1, column=1, sticky=W, padx=30)
+
+        # h Label
+        hLabel = Label(mainFrame, text="h = ").grid(row=2, sticky=W)
+        hEnt = Entry(mainFrame, width=10)
+        hEnt.grid(row=2, column=1, sticky=W, padx=30)
+
+        # order (n) Label
+        nLabel = Label(mainFrame, text="Order (n) = ").grid(row=3, sticky=W)
+        nEnt = Entry(mainFrame, width=10)
+        nEnt.grid(row=3, column=1, sticky=W, padx=30)
+
+        # Submit Button
+        submitBtn = Button(mainFrame, text="Submit", command=lambda: doExtra(fEnt.get(), xEnt.get(), hEnt.get(), nEnt.get()))
+        submitBtn.grid(row=4, pady=10)
+
+        resultFrame = Frame(extrap)
+        resultFrame.pack(fill="x")
+
+        scrollbar = Scrollbar(resultFrame)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        extraTextBox = Text(resultFrame)
+        extraTextBox.pack(fill="both")
+        extraTextBox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=extraTextBox.yview)
+
+        Button(extrap, text="Exit Window", command=lambda: extrap.destroy()).pack(fill=X)
+
+        def doExtra(fstr, x, h, n):
+            def richardson(_fstr, x, n, h):
+                d = np.array([[0] * (n + 1)] * (n + 1), float)
+                for i in xrange(n + 1):
+                    d[i, 0] = 0.5 * (f(x + h, _fstr) - f(x - h, _fstr)) / h
+                    powerOf4 = 1
+                    for j in xrange(1, i + 1):
+                        powerOf4 = 4 * powerOf4
+                        d[i, j] = d[i, j - 1] + (d[i, j - 1] - d[i - 1, j - 1]) / (powerOf4 - 1)
+                    h = 0.5 * h
+                return d[n, n]
+
+            n = int(n)
+            x = float(x)
+            h = float(h)
+            _fstr = str(fstr)
+            Q = richardson(_fstr, x, n, h)
+
+            extraTextBox.insert(END, "Richardson Extrapolation yields Q = " + str(Q) + '\n')
 
     def adWindow(self):
         # create Automatic Differentiation window
