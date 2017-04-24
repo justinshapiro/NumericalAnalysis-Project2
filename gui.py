@@ -41,7 +41,7 @@ from Householder import Householder
 import time
 from chebyshev import Chebyshev
 import math
-from universal_function import f
+from universal_function import *
 import numpy as np
 import bezier
 import matplotlib.pyplot as plt
@@ -50,7 +50,9 @@ from scipy import interpolate, linalg
 from scipy.interpolate import lagrange
 from NDD import *
 from sympy import *
+from sympy.parsing.sympy_parser import parse_expr
 from ad_forward import *
+from ad import adnumber
 from NewtonCodes import intf, trapezoid, simpson, romberg
 
 class App(Frame):
@@ -1189,131 +1191,81 @@ class App(Frame):
         mainFrame = Frame(diffMethods)
         mainFrame.pack(fill = "both")
 
-        prompt1 = "How many x values do you have?: "
-        l = Label(mainFrame, text=prompt1)
-        l.grid(row=0, column=0, sticky=W, padx=0)
-        aDiff = Entry(mainFrame, width=3)
-        aDiff.grid(row=0, column=1, sticky=W, padx=25)
+        # f(x) label and entry box
+        fLabel = Label(mainFrame, text = "f(x) = ").grid(row = 0, sticky = W)
+        fEnt = Entry(mainFrame, width = 50)
+        fEnt.grid(row = 0, sticky = W, padx = 30)
 
-        # "Enter Values" Button
-        eBtn = Button(mainFrame, text="Enter Values", command=lambda: moreDiffMethods(int(aDiff.get())))
-        eBtn.grid(row=1, column=0, pady=10, sticky=W)
+        # x Label
+        xLabel = Label(mainFrame, text="x = ").grid(row=1, sticky=W)
+        xEnt = Entry(mainFrame, width=50)
+        xEnt.grid(row=1, sticky=W, padx=30)
 
-        def moreDiffMethods(num_x):
-            l.destroy()
-            aDiff.destroy()
-            eBtn.destroy()
+        # h Label
+        hLabel = Label(mainFrame, text="h = ").grid(row=2, sticky=W)
+        hEnt = Entry(mainFrame, width=50)
+        hEnt.grid(row=2, sticky=W, padx=30)
 
-            # f(x) Label
-            Label(mainFrame, text = "Enter f(x)").grid(row = 0, sticky = W)
+        # Submit Button
+        submitBtn = Button(mainFrame, text = "Submit", command=lambda: doDiffMethods(fEnt.get(), xEnt.get(), hEnt.get()))
+        submitBtn.grid(row=3, pady = 10)
 
-            # f(g) label and entry box
-            fLabel = Label(mainFrame, text = "f(x):").grid(row = 1, sticky = W)
-            fEnt = Entry(mainFrame, width = 50)
-            fEnt.grid(row = 1, sticky = W, padx = 30)
+        resultFrame = Frame(diffMethods)
+        resultFrame.pack(fill="x")
 
-            row_count = 2
+        scrollbar = Scrollbar(resultFrame)
+        scrollbar.pack(side=RIGHT, fill=Y)
 
-            x_values = []
-            i = 0
-            while i < num_x:
-                x_values.append([""])
-                # x_i
-                Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, sticky=W, padx=0)
-                x_values[i] = Entry(mainFrame, width=3)
-                x_values[i].grid(row=row_count, sticky=W, padx=30)
-                row_count += 1
-                i += 1
+        diffTextBox = Text(resultFrame)
+        diffTextBox.pack(fill="both")
+        diffTextBox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=diffTextBox.yview)
 
-            # Submit Button
-            submitBtn = Button(mainFrame, text = "Submit", command=lambda: doDiffMethods(fEnt.get(), x_values))
-            submitBtn.grid(row = row_count, pady = 10)
+        Button(diffMethods, text = "Exit Window", command = lambda: diffMethods.destroy()).pack(fill = X)
 
-            resultFrame = Frame(diffMethods)
-            resultFrame.pack(fill="x")
+        def doDiffMethods(fstr, x, h):
+            def analytic(_fstr, x):
+                _fstr = format(1, _fstr, ['x'])
+                _fstr = parse_expr(_fstr)
+                _fstr = str(diff(_fstr))
+                result = f(x, _fstr)
+                return result
 
-            scrollbar = Scrollbar(resultFrame)
-            scrollbar.pack(side=RIGHT, fill=Y)
+            def forward(_fstr, x, h):
+                term1 = float(f(x + h, _fstr))
+                term2 = float(f(x, _fstr))
+                result = (term1 - term2) / h
+                return result
 
-            diffTextBox = Text(resultFrame)
-            diffTextBox.pack(fill="both")
-            diffTextBox.config(yscrollcommand=scrollbar.set)
-            scrollbar.config(command=diffTextBox.yview)
+            def backward(_fstr, x, h):
+                term1 = float(f(x, _fstr))
+                term2 = float(f(x - h, _fstr))
+                result = (term1 - term2) / h
+                return result
 
-            Button(diffMethods, text = "Exit Window", command = lambda: diffMethods.destroy()).pack(fill = X)
+            def centered(_fstr, x, h):
+                term1 = float(f(x + h, _fstr))
+                term2 = float(f(x - h, _fstr))
+                result = (term1 - term2) / (2 * h)
+                return result
 
-            def doDiffMethods(f, xValues):
-                f = format(0, f, ['x'])
+            def get_error(_fstr, result, x):
+                real_deriv = analytic(_fstr, x)
+                result = abs(result - real_deriv)
+                return result
 
-                i = 0
-                all_x = []
-                while i < len(xValues):
-                    all_x.append([""])
-                    all_x[i] = xValues[i].get()
-                    i += 1
-
-                x = []
-                i = 0
-                while i < len(all_x):
-                    x.append(adnumber(float(all_x[i])))
-                    i += 1
-
-                def function(x):
-                    return eval(f)
-
-                def analytic(x):
-                    f = function(x).d(x)
-                    return f
-
-                def forward(x, h):
-                    return (function(x + h) - function(x)) / h
-
-
-                def backward(x, h):
-                    return (function(x) - function(x - h)) / h
-
-
-                def central(x, h):
-                    return (function(x + h) - function(x - h)) / (2 * h)
-
-                def error_forward(y):
-                    f = abs((forward(1, y) - analytic(1)) / analytic(1))
-                    return f
-
-
-                def error_backward(y):
-                    f = abs(backward(1, y) - analytic(1)) / analytic(1)
-                    return f
-
-
-                def error_central(y):
-                    f = abs(central(1, y) - analytic(1)) / analytic(1)
-                    return f
-
-                diffTextBox.insert(END, "forward :" + str(float(forward(1.0, x[len(x) - 1]))) + "\n")
-                diffTextBox.insert(END, "backward: " + str(float(backward(1.0, x[len(x) - 1]))) + "\n")
-                diffTextBox.insert(END, "central: " + str(float(central(1.0, x[len(x) - 1]))) + "\n")
-                diffTextBox.insert(END, "analytic: " + str(float(analytic(adnumber(1.0)))) + '\n')
-
-                # Having Troubles PLOTTING please help :D
-
-                '''
-                values = []
-                i = 0
-                while i < len(x):
-                    values.append(function(x[i]))
-                    i += 1
-
-                dValues = []
-                i = 0
-                while i < len(x):
-                    dValues.append(analytic(x[i]))
-                    i += 1
-
-                print x
-                print values
-                print dValues
-                '''
+            _fstr = str(fstr)
+            x = float(x)
+            h = float(h)
+            f_error = forward(_fstr, x, h)
+            b_error = backward(_fstr, x, h)
+            c_error = centered(_fstr, x, h)
+            diffTextBox.insert(END, "Forward: " + str(f_error) + '\n')
+            diffTextBox.insert(END, "Backward: " + str(b_error) + '\n')
+            diffTextBox.insert(END, "Centered: " + str(c_error) + '\n\n')
+            diffTextBox.insert(END, "Forward Error: " + str(get_error("1/x", f_error, x)) + '\n')
+            diffTextBox.insert(END, "Backward Error: " + str(get_error("1/x", b_error, x)) + '\n')
+            diffTextBox.insert(END, "Centered Error: " + str(get_error("1/x", c_error, x)) + '\n')
 
     def extrapWindow(self):
         # create Extrapolation window
@@ -1574,6 +1526,7 @@ class App(Frame):
             Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
 
             def doAdaptive(f, a, b, n):
+                a= ""
                 #do stuff here
                 
         def gaussianWindow():
@@ -1623,6 +1576,7 @@ class App(Frame):
             Button(gauss, text = "Exit Window", command = lambda: gauss.destroy()).pack(fill="both")
 
             def doGauss(f, a, b, n):
+                a= ""
                 #do stuff here
 
 
