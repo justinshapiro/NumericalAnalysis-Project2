@@ -167,7 +167,6 @@ class App(Frame):
             self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
 
     def doLagrange(self, points):
-        start_time = timeit.default_timer()
         x = []
         y = []
         i = 0
@@ -176,7 +175,9 @@ class App(Frame):
             y.append(float(points[i][1].get()))
             i += 1
 
+        start_time = timeit.default_timer()
         P = str(lagrange(x, y))
+        end_time = timeit.default_timer() - start_time
 
         i = 0
         exp_list = []
@@ -191,7 +192,6 @@ class App(Frame):
                 P = P[:i + 1] + "^" + str(exp_list.pop()) + P[i + 1:]
             i += 1
         P = P.replace(' ', '')
-        end_time = timeit.default_timer() - start_time
         self.text_box.insert(END, "P(x) = " + P + "\n")
         self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
@@ -228,6 +228,7 @@ class App(Frame):
                 Label(mainFrame, text="x_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
                 points[i][0] = Entry(mainFrame, width=3)
                 points[i][0].grid(row=row_count, column=0, sticky=W, padx=25)
+
                 # y_i
                 Label(mainFrame, text="y_" + (str(i + 1)) + ": ").grid(row=row_count, column=1, sticky=W, padx=0)
                 points[i][1] = Entry(mainFrame, width=3)
