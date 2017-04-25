@@ -74,8 +74,6 @@ def format(_type, _str, var_list):
             _str = _str.replace('!', "")
             _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
 
-    print(_str)
-
     return _str
 
 
