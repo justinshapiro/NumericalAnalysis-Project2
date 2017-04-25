@@ -1,41 +1,8 @@
-'''
-
-A. Interpolation
-
-    Lagrange -- DONE
-    Newton's Divided Differences -- DONE
-    Chebyshev -- DONE
-    Splines (cubic) -- DONE
-    Bezier -- DONE
-
-B. Least Squares
-
-    Linear
-        - Least Squares -- DONE
-        - Householder Reflectors -- DONE
-        - QR Factorization -- DONE
-    Nonlinear
-        - Gauss-Newton -- DONE
-        - Levenberg-Marquardt -- DONE
-
-C. Differentiation and Integration
-
-    Differentiation
-    Difference Methods
-    Extrapolation
-    Automatic Differentiation (professor's notes/references)
-    Integration
-    Newton-Codes - Trapezoidal, Simpson
-    Romberg
-    Adaptive
-    Gaussian
-
-'''
-
 from Tkinter import *
 import tkFont
 from ttk import *
 import matplotlib
+import timeit
 import matplotlib.backends.backend_tkagg
 matplotlib.use("TkAgg") # needed for Macs
 from Householder import Householder
@@ -200,6 +167,7 @@ class App(Frame):
             self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
 
     def doLagrange(self, points):
+        start_time = timeit.default_timer()
         x = []
         y = []
         i = 0
@@ -223,8 +191,9 @@ class App(Frame):
                 P = P[:i + 1] + "^" + str(exp_list.pop()) + P[i + 1:]
             i += 1
         P = P.replace(' ', '')
-
+        end_time = timeit.default_timer() - start_time
         self.text_box.insert(END, "P(x) = " + P + "\n")
+        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def nddWindow(self):
         self.ndd = Toplevel()
@@ -278,6 +247,7 @@ class App(Frame):
             self.text_box.grid(row=row_count, column=0, columnspan=4, sticky=W)
 
     def doNDD(self, points):
+        start_time = timeit.default_timer()
         x = []
         y = []
         i = 0
@@ -302,7 +272,9 @@ class App(Frame):
                     exponent -= 1
             i += 1
 
+        end_time = timeit.default_timer() - start_time
         self.text_box.insert(END, "P(x) = " + P + "\n")
+        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def chebyWindow(self):
         # create Chebyshev window
@@ -311,11 +283,12 @@ class App(Frame):
         self.cheby.resizable(0,0)
         self.chebResult = DoubleVar()
         self.chebErr = DoubleVar()
+        self.chebsecutionTime = DoubleVar()
         mainFrame = Frame(self.cheby)
         mainFrame.pack()
 
         # Interval Label
-        Label(mainFrame, text = "Enter Interval [a, b]:").grid(row = 0, sticky = W)
+        Label(mainFrame, text = "Enter Interval [a, b] \n(where a <= x <= b):").grid(row = 0, sticky = W)
 
         # a label and entry box
         aLabel = Label(mainFrame, text = "a:").grid(row = 1, sticky = W)
@@ -356,21 +329,33 @@ class App(Frame):
         errMsg = Entry(mainFrame, width = 40, textvariable = self.chebErr)
         errMsg.grid(row = 8, sticky = W, padx = 50)
 
+        # Execution time box
+        Label(mainFrame, text="Execution time: ").grid(row=9, sticky=W)
+        errMsg = Entry(mainFrame, width=40, textvariable=self.chebsecutionTime)
+        errMsg.grid(row=10, sticky=W, padx=50)
+
     # Function Calculates Chebyshev sets Result/Error Fields
     def doCheby(self, a, b, d, func_str, x):
+        start_time = timeit.default_timer()
         d = int(d)
-        c = Chebyshev(int(a), int(b), int(d), f, func_str)
-        if c.func != "err":
-            eval = c.eval(x)
-            if eval != "err":
-                self.chebResult.set(eval)
-                self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
+        try:
+            assert (float(a) <= float(x) <= float(b))
+            c = Chebyshev(int(a), int(b), d, f, func_str)
+            if c.func != "err":
+                eval = c.eval(x)
+                end_time = timeit.default_timer() - start_time
+                if eval != "err":
+                    self.chebResult.set(eval)
+                    self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
+                    self.chebsecutionTime.set(str(end_time) + " seconds\n")
+        except AssertionError:
+            self.chebResult.set("Error: x doesn't meet the requirement a <= x <= b")
 
     def splinesWindow(self):
         # create window
         self.splines = Toplevel()
         self.splines.title("Cubic Splines")
-        self.splines.resizable(0, 0)
+        self.splines.resizable(1, 1)
         mainFrame = Frame(self.splines)
         mainFrame.pack()
         self._font= tkFont.Font(family="Helvetica", size=8)
@@ -444,11 +429,13 @@ class App(Frame):
         x_np = np.array(x)
         y_np = np.array(y)
         arr = np.arange(np.amin(x), np.amax(x), 0.01)
-        s = interpolate.CubicSpline(x_np, y_np, bc_type=((2, 0.0), (2, 0.0)))
+        start_time = timeit.default_timer()
+        s = scipy.interpolate.CubicSpline(x_np, y_np, bc_type=((2, 0.0), (2, 0.0)))
+        end_time = timeit.default_timer() - start_time
 
         s_arr = []
         i = 0
-        while i < len(s.c) - 1:
+        while i < len(s.c[1]) - 1:
             inner_sign = ""
             if x[i] < 0:
                 inner_sign = "+ "
@@ -483,8 +470,8 @@ class App(Frame):
             spline_eqs += str(s_arr[i]) + "\n"
             i += 1
 
-        print(spline_eqs)
         self.text_box.insert(END, spline_eqs)
+        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
         plt.plot(x_np, y_np, 'bo', label='Data Point')
         plt.plot(arr, s(arr), 'r-', label='Cubic Spline')
@@ -498,6 +485,7 @@ class App(Frame):
         self.bezier.resizable(0, 0)
         self.bezierEndpoints = DoubleVar()
         self.bezierControlPoints = DoubleVar()
+        self.bezicutionTime = DoubleVar()
         mainFrame = Frame(self.bezier)
         mainFrame.pack()
 
@@ -563,8 +551,12 @@ class App(Frame):
         endPoints = Entry(mainFrame, width=25, textvariable=self.bezierControlPoints)
         endPoints.grid(row=6, column=1, sticky=W, padx=25)
 
+        # Execution Time
+        endLabel = Label(mainFrame, text="Execution Time:").grid(row=7, column=0, sticky=W)
+        endPoints = Entry(mainFrame, width=25, textvariable=self.bezicutionTime)
+        endPoints.grid(row=7, column=1, sticky=W, padx=25)
+
     def doBezier(self, vals):
-        print(vals[0])
         x1 = float(vals[0])
         bx = float(vals[1])
         cx = float(vals[2])
@@ -573,6 +565,7 @@ class App(Frame):
         by = float(vals[5])
         cy = float(vals[6])
         dy = float(vals[7])
+        start_time = timeit.default_timer()
         x2 = float((bx + 3 * x1) / 3.0)
         x3 = float((cx + 3 * x2 + bx) / 3.0)
         x4 = float(dx + x1 + bx + cx)
@@ -583,6 +576,7 @@ class App(Frame):
         endpoints = [[x1, y1], [x4, y4]]
         control_points =[[x2, y2], [x3, y3]]
 
+        end_time = timeit.default_timer() - start_time
         e1 = str(endpoints[0]).replace('[', '(')
         e1 = e1.replace(']', ')')
         e2 = str(endpoints[1]).replace('[', '(')
@@ -591,8 +585,10 @@ class App(Frame):
         c1 = c1.replace(']', ')')
         c2 = str(control_points[1]).replace('[', '(')
         c2 = c2.replace(']', ')')
+
         self.bezierEndpoints.set(e1 + " and " + e2)
         self.bezierControlPoints.set(c1 + " and " + c2)
+        self.bezicutionTime.set(str(end_time) + " seconds\n")
 
         axes = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 16}
         in_graph = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 10}
@@ -750,17 +746,19 @@ class App(Frame):
                         matrix_B[i] = float(B[i].get())
                         i += 1
 
+                    start_time = timeit.default_timer()
                     X = np.linalg.lstsq(matrix_A, matrix_B)
                     residual = matrix_B - np.matmul(matrix_A, X[0])
                     inner_square = 0
                     for r in residual:
                         inner_square += float(r)**2
                     rmse = math.sqrt(inner_square / len(residual))
+                    end_time = timeit.default_timer() - start_time
 
                     self.lsTextBox.insert(END, "X: ")
                     self.lsTextBox.insert(END, str(X[0]) + '^T\n')
                     self.lsTextBox.insert(END, "RMSE: " + str(rmse))
-
+                    self.lsTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
         def qrWindow():
             # create window
@@ -838,8 +836,10 @@ class App(Frame):
                             j += 1
                         i += 1
 
-                    A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
+                    start_time = timeit.default_timer()
+                    A = scipy.array(ourMatrix)
                     Q, R = scipy.linalg.qr(A)
+                    end_time = timeit.default_timer() - start_time
 
                     self.qrTextBox.insert(END, "A:\n")
                     for row in np.matrix(ourMatrix):
@@ -852,6 +852,7 @@ class App(Frame):
                     self.qrTextBox.insert(END, "R:\n")
                     for row in R:
                         self.qrTextBox.insert(END, str(row) + '\n')
+                    self.qrTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
         def householderWindow():
             # create window
@@ -930,9 +931,11 @@ class App(Frame):
 
                         i += 1
 
+                    start_time = timeit.default_timer()
                     A = scipy.array(ourMatrix)  # test values, also tested 3 by 3
                     h = Householder()
                     Q, R = h.householder(A)
+                    end_time = timeit.default_timer() - start_time
 
                     self.householderTextBox.insert(END, "A:\n")
                     for row in np.matrix(ourMatrix):
@@ -945,6 +948,7 @@ class App(Frame):
                     self.householderTextBox.insert(END, "R:\n")
                     for row in R:
                         self.householderTextBox.insert(END, str(row) + '\n')
+                    self.householderTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def nonLinearWindow(self):
         # create window
@@ -1120,6 +1124,7 @@ class App(Frame):
                     base_str_rk = "sqrt((x xi)^2 + (y yi)^2) Ri K"
 
                     _it = 0
+                    start_time = timeit.default_timer()
                     while _it < iterations:
                         i = 0
                         A = []
@@ -1170,6 +1175,7 @@ class App(Frame):
                     while i < iterations:
                         graph_x.append(i + 1)
                         i += 1
+                    end_time = timeit.default_timer() - start_time
 
                     i = 0
                     for row in solutions:
@@ -1180,6 +1186,7 @@ class App(Frame):
                     for row in rmse:
                         _str = "RMSE for Iteration " + str(i + 1) + ": " + str(row)
                         self.gnTextBox.insert(END, _str + '\n')
+                    self.gnTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
                     plt.plot(graph_x, rmse)
                     plt.xlabel("Iterations")
@@ -1261,15 +1268,18 @@ class App(Frame):
             _fstr = str(fstr)
             x = float(x)
             h = float(h)
+            start_time = timeit.default_timer()
             f_error = forward(_fstr, x, h)
             b_error = backward(_fstr, x, h)
             c_error = centered(_fstr, x, h)
             diffTextBox.insert(END, "Two-Point Forward Difference: " + str(f_error) + '\n')
             diffTextBox.insert(END, "Two-Point Backward Backward Difference: " + str(b_error) + '\n')
             diffTextBox.insert(END, "Three-Point Centered Difference: " + str(c_error) + '\n\n')
-            diffTextBox.insert(END, "Forward DifferenceError: " + str(get_error("1/x", f_error, x)) + '\n')
+            diffTextBox.insert(END, "Forward Difference Error: " + str(get_error("1/x", f_error, x)) + '\n')
             diffTextBox.insert(END, "Backward Difference Error: " + str(get_error("1/x", b_error, x)) + '\n')
-            diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n')
+            diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n\n')
+            end_time = timeit.default_timer() - start_time
+            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def extrapWindow(self):
         # create Extrapolation window
@@ -1332,9 +1342,11 @@ class App(Frame):
             x = float(x)
             h = float(h)
             _fstr = str(fstr)
+            start_time = timeit.default_timer()
             Q = richardson(_fstr, x, n, h)
-
+            end_time = timeit.default_timer() - start_time
             extraTextBox.insert(END, "Richardson Extrapolation yields Q = " + str(Q) + '\n')
+            extraTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def adWindow(self):
         # create Automatic Differentiation window
@@ -1383,17 +1395,19 @@ class App(Frame):
 
         def doAD(f, g, x):
             x = float(x)
+            start_time = timeit.default_timer()
             g = format(0, g, ['x'])
             autoDiff = forwardAutoDiff(format(0, f, ['g']), g, x)
             gValues = float(autoDiff.calcG()), float(autoDiff.g_deriv())
             result = (autoDiff.calcF(), autoDiff.f_deriv())
+            end_time = timeit.default_timer() - start_time
 
             adTextBox.insert(END, '\nx = ' + str(x) + '\n')
             adTextBox.insert(END, 'g(x) = ' + str(autoDiff.g) + '\n')
             adTextBox.insert(END, 'g(x), g\'(x) at x = ' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
             adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
-            adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n')
-
+            adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n\n')
+            adTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def nCodesWindow(self):
         # create Newton Codes window
@@ -1449,16 +1463,20 @@ class App(Frame):
             n = int(n)
 
             # call integration routines
+            t_start_time = timeit.default_timer()
             trap = trapezoid(fstr, a, b, n)
-            simp = simpson(fstr, a, b, n)
             terr = trap_error(fstr, a, b)
+            t_end_time = timeit.default_timer() - t_start_time
+            s_start_time = timeit.default_timer()
+            simp = simpson(fstr, a, b, n)
             serr = simp_error(fstr, a, b)
+            s_end_time = timeit.default_timer() - s_start_time
 
             # print results
-            nCodesTextBox.insert(END, '\nMethod            Solution    Error\n' )
-            nCodesTextBox.insert(END, '----------------------------------------------\n' )
-            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f\n'  % (trap, terr),'%' + '\n' )
-            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f\n'  % (simp, serr),'%' + '\n' )
+            nCodesTextBox.insert(END, '\nMethod            Solution    Error     Execution Time\n' )
+            nCodesTextBox.insert(END, '--------------------------------------------------------\n' )
+            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f     %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
+            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f     %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
 
     def rombergWindow(self):
         # create romberg window
@@ -1511,8 +1529,11 @@ class App(Frame):
             fstr = str(func)
             a = float(a)
             b = float(b)
+            start_time = timeit.default_timer()
             romb = romberg(fstr, a, b, n)
-            romTextBox.insert(END, 'Romberg:        %12.6f\n' % romb,'%' + '\n' )
+            end_time = timeit.default_timer() - start_time
+            romTextBox.insert(END, 'Romberg: ' + str(romb) + '\n')
+            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def quadraWindow(self):
         # create Adaptive window
@@ -1569,10 +1590,13 @@ class App(Frame):
                 fstr = str(f)
                 a = float(a)
                 b = float(b)
+                start_time = timeit.default_timer()
                 x = Symbol('x')
                 fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
                 result = scipy.integrate.quad(fstr, a, b)[0]
+                end_time = timeit.default_timer() - start_time
                 adaptTextBox.insert(END, "Adaptive Quadrature yields: " + str(result) + "\n")
+                adaptTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
         def gaussianWindow():
             gauss = Toplevel()
@@ -1619,18 +1643,19 @@ class App(Frame):
                 fstr = str(f)
                 a = float(a)
                 b = float(b)
+                start_time = timeit.default_timer()
                 x = Symbol('x')
                 fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
                 result = quadrature(np.vectorize(fstr), a, b)[0]
+                end_time = timeit.default_timer() - start_time
                 gaussTextBox.insert(END, "Gaussian Quadrature yields: " + str(result) + "\n")
-
+                gaussTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def start(self):
         self.root.mainloop()
 
     def quitApp(self):
         self.root.destroy()
-
 
 # create the application
 gui = App()

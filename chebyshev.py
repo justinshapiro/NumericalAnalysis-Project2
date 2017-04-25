@@ -1,14 +1,6 @@
 import math
 
 class Chebyshev:
-    """
-    Chebyshev(a, b, n, func)
-    Given a function func, lower and upper limits of the interval [a,b],
-    and maximum degree n, this class computes a Chebyshev approximation
-    of the function.
-    Method eval(x) yields the approximated function value.
-    """
-
     def __init__(self, a, b, n, func, eval_str):
         self.a = a
         self.b = b
@@ -35,11 +27,6 @@ class Chebyshev:
             else:
                 x = int(x)
             a,b = self.a, self.b
-            try:
-                assert(a <= x <= b)
-            except AssertionError:
-                print("Error: x doesn't meet the requirement a <= x <= b")
-                return "err"
             y = (2.0 * x - a - b) * (1.0 / (b - a))
             y2 = 2.0 * y
             (d, dd) = (self.c[-1], 0)             # Special case first step for efficiency
