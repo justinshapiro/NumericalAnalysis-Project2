@@ -28,7 +28,7 @@ def format(_type, _str, var_list):
     i = 0
     while i < len(_str):
         this_str = _str[i]
-        if _str[i] in var_list:
+        if _str[i] in var_list or _str[i].isdigit():
             if i + 1 < len(_str) and _str[i + 1] not in no_mul_symbols:
                 if i > 0:
                     _str = _str[:i + 1] + "*" + _str[i + 1:]
@@ -73,6 +73,8 @@ def format(_type, _str, var_list):
                     idx -= 1
             _str = _str.replace('!', "")
             _str = _str[:idx] + "math.factorial(" + _str[idx] + ")" + _str[idx:]
+
+    print(_str)
 
     return _str
 

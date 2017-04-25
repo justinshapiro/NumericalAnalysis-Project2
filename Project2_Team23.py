@@ -36,6 +36,7 @@ from Tkinter import *
 import tkFont
 from ttk import *
 import matplotlib
+import matplotlib.backends.backend_tkagg
 matplotlib.use("TkAgg") # needed for Macs
 from Householder import Householder
 import time
@@ -43,6 +44,7 @@ from chebyshev import Chebyshev
 import math
 from universal_function import *
 import numpy as np
+import FileDialog
 import bezier
 import matplotlib.pyplot as plt
 import scipy
@@ -51,6 +53,8 @@ from scipy.interpolate import lagrange
 from NDD import *
 from sympy import *
 from sympy.parsing.sympy_parser import parse_expr
+from scipy.integrate import quad, quadrature
+from sympy.utilities.lambdify import lambdify
 from ad_forward import *
 from ad import adnumber
 from NewtonCodes import *
@@ -1544,13 +1548,8 @@ class App(Frame):
             b = Entry(mainFrame, width = 40)
             b.grid(row = 3, sticky = W, padx = 50)
 
-            # number of intervals label and entry box
-            nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
-            n = Entry(mainFrame, width = 35)
-            n.grid(row = 4, sticky = W, padx = 80)
-
             # Submit Button
-            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doAdaptive(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doAdaptive(fEnt.get(), a.get(), b.get()))
             submitBtn.grid(row = 6, pady = 10)
 
             resultFrame = Frame(adapt)
@@ -1566,10 +1565,15 @@ class App(Frame):
 
             Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
 
-            def doAdaptive(f, a, b, n):
-                a= ""
-                #do stuff here
-                
+            def doAdaptive(f, a, b):
+                fstr = str(f)
+                a = float(a)
+                b = float(b)
+                x = Symbol('x')
+                fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
+                result = scipy.integrate.quad(fstr, a, b)[0]
+                adaptTextBox.insert(END, "Adaptive Quadrature yields: " + str(result) + "\n")
+
         def gaussianWindow():
             gauss = Toplevel()
             gauss.title("Gaussian Quadrature")
@@ -1594,13 +1598,8 @@ class App(Frame):
             b = Entry(mainFrame, width = 40)
             b.grid(row = 3, sticky = W, padx = 50)
 
-            # number of intervals label and entry box
-            nLabel = Label(mainFrame, text = "# of intervals:").grid(row = 4, sticky = W)
-            n = Entry(mainFrame, width = 35)
-            n.grid(row = 4, sticky = W, padx = 80)
-
             # Submit Button
-            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doGauss(fEnt.get(), int(a.get()), int(b.get()), int(n.get())))
+            submitBtn = Button(mainFrame, text = "Submit", command = lambda: doGauss(fEnt.get(), a.get(), b.get()))
             submitBtn.grid(row = 6, pady = 10)
 
             resultFrame = Frame(gauss)
@@ -1616,9 +1615,14 @@ class App(Frame):
 
             Button(gauss, text = "Exit Window", command = lambda: gauss.destroy()).pack(fill="both")
 
-            def doGauss(f, a, b, n):
-                a= ""
-                #do stuff here
+            def doGauss(f, a, b):
+                fstr = str(f)
+                a = float(a)
+                b = float(b)
+                x = Symbol('x')
+                fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
+                result = quadrature(np.vectorize(fstr), a, b)[0]
+                gaussTextBox.insert(END, "Gaussian Quadrature yields: " + str(result) + "\n")
 
 
     def start(self):
