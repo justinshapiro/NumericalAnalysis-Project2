@@ -1463,6 +1463,16 @@ class App(Frame):
             b = float(b)
             n = int(n)
 
+            def roundoff_error(fstr, a, b):
+                e_mach = np.finfo(float).eps
+                _fstr = format(1, fstr, ['x'])
+                _fstr = parse_expr(_fstr)
+                _fstr = str(diff(diff(diff(_fstr))))
+                c = (b + a) / 2
+                h = b - a
+                result = (((h**2) / float(6)) * (f(c, _fstr))) + (e_mach / float(h))
+                return result
+
             # call integration routines
             t_start_time = timeit.default_timer()
             trap = trapezoid(fstr, a, b, n)
@@ -1474,11 +1484,11 @@ class App(Frame):
             s_end_time = timeit.default_timer() - s_start_time
 
             # print results
-            nCodesTextBox.insert(END, '\nMethod            Solution    Error     Execution Time\n' )
-            nCodesTextBox.insert(END, '--------------------------------------------------------\n' )
-            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f     %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
-            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f     %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
-
+            nCodesTextBox.insert(END, '\nMethod            Solution    Numerical Error      Execution Time\n' )
+            nCodesTextBox.insert(END, '-------------------------------------------------------------------\n' )
+            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f               %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
+            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f               %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
+            nCodesTextBox.insert(END, "\nRoundoff Error E(h) = " + str(roundoff_error(fstr, a, b)) + " (upper bound)")
     def rombergWindow(self):
         # create romberg window
         romb = Toplevel()
