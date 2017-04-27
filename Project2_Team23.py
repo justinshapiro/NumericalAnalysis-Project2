@@ -32,7 +32,7 @@ class App(Frame):
         self.root.s = Style()
         self.root.geometry("420x300")
         self.root.resizable(1, 1)  # made resizable for now, may need to increase geometry
-        self.root.s.theme_use("vista")
+        self.root.s.theme_use("vista") # change to "aqua" for Mac
         self.root.title("Numerical Analysis - Project 2")
 
         Frame.__init__(self, self.root)
