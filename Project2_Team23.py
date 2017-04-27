@@ -179,21 +179,24 @@ class App(Frame):
         P = str(lagrange(x, y))
         end_time = timeit.default_timer() - start_time
 
-        i = 0
-        exp_list = []
-        while P[i] != '\n':
-            if P[i].isdigit():
-                exp_list.append(P[i])
-            i += 1
-        P = P.split('\n')[1]
-        i = 0
-        while i < len(P) and len(exp_list) > 0:
-            if P[i] == 'x':
-                P = P[:i + 1] + "^" + str(exp_list.pop()) + P[i + 1:]
-            i += 1
-        P = P.replace(' ', '')
-        self.text_box.insert(END, "P(x) = " + P + "\n")
-        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+        if P.find("inf") > -1 or P.find("nan") > -1:
+            self.text_box.insert(END, "Error: Points yield division by zero. Check your input")
+        else:
+            i = 0
+            exp_list = []
+            while P[i] != '\n':
+                if P[i].isdigit():
+                    exp_list.append(P[i])
+                i += 1
+            P = P.split('\n')[1]
+            i = 0
+            while i < len(P) and len(exp_list) > 0:
+                if P[i] == 'x':
+                    P = P[:i + 1] + "^" + str(exp_list.pop()) + P[i + 1:]
+                i += 1
+            P = P.replace(' ', '')
+            self.text_box.insert(END, "P(x) = " + P + "\n")
+            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def nddWindow(self):
         self.ndd = Toplevel()
@@ -258,24 +261,27 @@ class App(Frame):
             i += 1
 
         coefs = list(newtdd(x, y))
-        exponent = len(coefs) - 1
-        P = ""
-        i = 0
-        while len(coefs) > 0:
-            if i > 0:
-                P += "%+f" % coefs.pop()
-            else:
-                P += "%f" % coefs.pop()
-            if len(coefs) > 0:
-                P += "x"
-                if len(coefs) > 1:
-                    P += "^" + str(exponent)
-                    exponent -= 1
-            i += 1
+        if str(coefs).find("inf") > -1 or str(coefs).find("nan") > -1:
+            self.text_box.insert(END, "Error: Points yield division by zero. Check your input")
+        else:
+            exponent = len(coefs) - 1
+            P = ""
+            i = 0
+            while len(coefs) > 0:
+                if i > 0:
+                    P += "%+f" % coefs.pop()
+                else:
+                    P += "%f" % coefs.pop()
+                if len(coefs) > 0:
+                    P += "x"
+                    if len(coefs) > 1:
+                        P += "^" + str(exponent)
+                        exponent -= 1
+                i += 1
 
-        end_time = timeit.default_timer() - start_time
-        self.text_box.insert(END, "P(x) = " + P + "\n")
-        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            end_time = timeit.default_timer() - start_time
+            self.text_box.insert(END, "P(x) = " + P + "\n")
+            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
     def chebyWindow(self):
         # create Chebyshev window
@@ -293,27 +299,27 @@ class App(Frame):
 
         # a label and entry box
         aLabel = Label(mainFrame, text = "a:").grid(row = 1, sticky = W)
-        aCheb = Entry(mainFrame, width = 40)
+        aCheb = Entry(mainFrame, width = 5)
         aCheb.grid(row = 1, sticky = W, padx = 50)
 
         # b label and entry box
         bLabel = Label(mainFrame, text = "b:").grid(row = 2, sticky = W)
-        bCheb = Entry(mainFrame, width = 40)
+        bCheb = Entry(mainFrame, width = 5)
         bCheb.grid(row = 2, sticky = W, padx = 50)
 
         # degree label and entry box
         dLabel = Label(mainFrame, text = "Degree:").grid(row = 3, sticky = W)
-        dCheb = Entry(mainFrame, width = 40)
+        dCheb = Entry(mainFrame, width = 5)
         dCheb.grid(row = 3, sticky = W, padx = 50)
 
         # f(x) label and entry box
         fLabel = Label(mainFrame, text = "f(x):").grid(row = 4, sticky = W)
-        fCheb = Entry(mainFrame, width = 40)
+        fCheb = Entry(mainFrame, width = 15)
         fCheb.grid(row = 4, sticky = W, padx = 50)
 
         # x label and entry box
         xLabel = Label(mainFrame, text="x = ").grid(row=5, sticky=W)
-        xCheb = Entry(mainFrame, width=40)
+        xCheb = Entry(mainFrame, width=5)
         xCheb.grid(row=5, sticky=W, padx=50)
 
         # Submit Button
@@ -340,17 +346,21 @@ class App(Frame):
         start_time = timeit.default_timer()
         d = int(d)
         try:
-            assert (float(a) <= float(x) <= float(b))
-            c = Chebyshev(int(a), int(b), d, f, func_str)
-            if c.func != "err":
-                eval = c.eval(x)
-                end_time = timeit.default_timer() - start_time
-                if eval != "err":
-                    self.chebResult.set(eval)
-                    self.chebErr.set(f(x, func_str) / (math.pow(2, d - 1) * math.factorial(d)))
-                    self.chebsecutionTime.set(str(end_time) + " seconds\n")
+            assert (int(d) <= 150)
+            try:
+                assert (float(a) <= float(x) and float(x) <= float(b))
+                c = Chebyshev(int(a), int(b), d, f, func_str)
+                if c.func != "err":
+                    eval = c.eval(x)
+                    end_time = timeit.default_timer() - start_time
+                    if eval != "err":
+                        self.chebResult.set(eval)
+                        self.chebErr.set(f(x, func_str) / (math.pow(2, int(d) - 1) * math.factorial(d)))
+                        self.chebsecutionTime.set(str(end_time) + " seconds\n")
+            except AssertionError:
+                self.chebResult.set("Error: x doesn't meet the requirement a <= x <= b")
         except AssertionError:
-            self.chebResult.set("Error: x doesn't meet the requirement a <= x <= b")
+            self.chebResult.set("Error: Degree is too large, must be less than or equal to 150")
 
     def splinesWindow(self):
         # create window
@@ -359,8 +369,7 @@ class App(Frame):
         self.splines.resizable(1, 1)
         mainFrame = Frame(self.splines)
         mainFrame.pack()
-        self._font= tkFont.Font(family="Helvetica", size=8)
-        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        self.text_box = Text(mainFrame, width=60, height=5)
 
         prompt1 = "How many data points do you have?: "
         l = Label(mainFrame, text=prompt1)
@@ -415,69 +424,85 @@ class App(Frame):
 
         # assert that points are sorted by increasing x value
         all_points = sorted(all_points, key=lambda x: (x[0]))
-
-        x = []
+        last_x = "null"
+        err = False
         i = 0
         while i < len(all_points):
-            x.append(float(all_points[i][0]))
-            i += 1
-        y = []
-        i = 0
-        while i < len(all_points):
-            y.append(float(all_points[i][1]))
-            i += 1
-
-        x_np = np.array(x)
-        y_np = np.array(y)
-        arr = np.arange(np.amin(x), np.amax(x), 0.01)
-        start_time = timeit.default_timer()
-        s = scipy.interpolate.CubicSpline(x_np, y_np, bc_type=((2, 0.0), (2, 0.0)))
-        end_time = timeit.default_timer() - start_time
-
-        s_arr = []
-        i = 0
-        while i < len(s.c[1]) - 1:
-            inner_sign = ""
-            if x[i] < 0:
-                inner_sign = "+ "
+            if last_x == "null":
+                last_x = all_points[i][0]
             else:
-                inner_sign = "- "
-            s_str = "S_" + str(i + 1) + "(x) = "
-            s_str += str(s.c[3, i])
-            if float(s.c[2, i]) < 0:
-                s_str += " - "
-            else:
-                s_str += " + "
-            s_str += str(abs(s.c[2, i])) + "(x "
-            s_str += inner_sign + str(x[i]) + ") "
-            if float(s.c[1, i]) < 0:
-                s_str += "- "
-            else:
-                s_str += "+ "
-            s_str += str(abs(s.c[1, i])) + "(x "
-            s_str += inner_sign + str(x[i]) + ")^2 "
-            if float(s.c[0, i]) < 0:
-                s_str += "- "
-            else:
-                s_str += "+ "
-            s_str += str(abs(s.c[0, i])) + "(x "
-            s_str += inner_sign + str(x[i]) + ")^3"
-            s_arr.append(s_str)
+                if all_points[i][0] == last_x:
+                    err = True
+                    break
+                else:
+                    last_x = all_points[i][0]
             i += 1
 
-        i = 0
-        spline_eqs = ""
-        while i < len(s_arr):
-            spline_eqs += str(s_arr[i]) + "\n"
-            i += 1
+        if not err:
+            x = []
+            i = 0
+            while i < len(all_points):
+                x.append(float(all_points[i][0]))
+                i += 1
+            y = []
+            i = 0
+            while i < len(all_points):
+                y.append(float(all_points[i][1]))
+                i += 1
 
-        self.text_box.insert(END, spline_eqs)
-        self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            x_np = np.array(x)
+            y_np = np.array(y)
+            arr = np.arange(np.amin(x), np.amax(x), 0.01)
+            start_time = timeit.default_timer()
+            s = scipy.interpolate.CubicSpline(x_np, y_np, bc_type=((2, 0.0), (2, 0.0)))
+            end_time = timeit.default_timer() - start_time
 
-        plt.plot(x_np, y_np, 'bo', label='Data Point')
-        plt.plot(arr, s(arr), 'r-', label='Cubic Spline')
-        plt.legend()
-        plt.show()
+            s_arr = []
+            i = 0
+            while i < len(s.c[1]):
+                inner_sign = ""
+                if x[i] < 0:
+                    inner_sign = "+ "
+                else:
+                    inner_sign = "- "
+                s_str = "S_" + str(i + 1) + "(x) = "
+                s_str += str(s.c[3, i])
+                if float(s.c[2, i]) < 0:
+                    s_str += " - "
+                else:
+                    s_str += " + "
+                s_str += str(abs(s.c[2, i])) + "(x "
+                s_str += inner_sign + str(x[i]) + ") "
+                if float(s.c[1, i]) < 0:
+                    s_str += "- "
+                else:
+                    s_str += "+ "
+                s_str += str(abs(s.c[1, i])) + "(x "
+                s_str += inner_sign + str(x[i]) + ")^2 "
+                if float(s.c[0, i]) < 0:
+                    s_str += "- "
+                else:
+                    s_str += "+ "
+                s_str += str(abs(s.c[0, i])) + "(x "
+                s_str += inner_sign + str(x[i]) + ")^3"
+                s_arr.append(s_str)
+                i += 1
+
+            i = 0
+            spline_eqs = ""
+            while i < len(s_arr):
+                spline_eqs += str(s_arr[i]) + "\n"
+                i += 1
+
+            self.text_box.insert(END, spline_eqs)
+            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+
+            plt.plot(x_np, y_np, 'bo', label='Data Point')
+            plt.plot(arr, s(arr), 'r-', label='Cubic Spline')
+            plt.legend()
+            plt.show()
+        else:
+            self.text_box.insert(END, "Error: x must be a strictly increasing sequence (no duplicate x-values allowed)")
 
     def bezierWindow(self):
         # create window
@@ -758,8 +783,8 @@ class App(Frame):
 
                     self.lsTextBox.insert(END, "X: ")
                     self.lsTextBox.insert(END, str(X[0]) + '^T\n')
-                    self.lsTextBox.insert(END, "RMSE: " + str(rmse))
-                    self.lsTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                    self.lsTextBox.insert(END, "RMSE: " + str(rmse) + "\n")
+                    self.lsTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n\n")
 
         def qrWindow():
             # create window
@@ -1489,6 +1514,7 @@ class App(Frame):
             nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f               %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
             nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f               %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
             nCodesTextBox.insert(END, "\nRoundoff Error E(h) = " + str(roundoff_error(fstr, a, b)) + " (upper bound)")
+
     def rombergWindow(self):
         # create romberg window
         romb = Toplevel()

@@ -27,7 +27,7 @@ def format(_type, _str, var_list):
     no_mul_symbols = [')', '^', '*', '+', '-', '/']
     i = 0
     while i < len(_str):
-        this_str = _str[i]
+        # this_str = _str[i], for debugging
         if _str[i] in var_list or _str[i].isdigit():
             if i + 1 < len(_str) and _str[i + 1] not in no_mul_symbols:
                 if i > 0:
