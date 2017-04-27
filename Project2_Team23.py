@@ -369,7 +369,8 @@ class App(Frame):
         self.splines.resizable(1, 1)
         mainFrame = Frame(self.splines)
         mainFrame.pack()
-        self.text_box = Text(mainFrame, width=60, height=5)
+        self._font = tkFont.Font(family="Helvetica", size=8)
+        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
 
         prompt1 = "How many data points do you have?: "
         l = Label(mainFrame, text=prompt1)
