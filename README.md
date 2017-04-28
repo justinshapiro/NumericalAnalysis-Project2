@@ -2,7 +2,7 @@
 
 Code for Team 2.3 - Project 2
 
-DUE April 28th (tentative)
+DUE April 28th
 
 To be done in Python 2.7.13 and deployed for Team 1.3
 
@@ -40,12 +40,12 @@ B. Least Squares
 C. Differentiation and Integration
 
  - Differentiation
-	 - Difference Methods
-	 - Extrapolation
+	 - Difference Methods -- DONE
+	 - Extrapolation -- DONE
 	 - Automatic Differentiation (professor's notes/references) -- DONE
  - Integration
 	 - Newton-Codes - Trapezoidal, Simpson -- DONE
 	 - Romberg -- DONE
 	 - Quadrature
-        - Adaptive
-        - Gaussian
+        - Adaptive -- DONE
+        - Gaussian -- DONE

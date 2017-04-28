@@ -1,10 +1,9 @@
 from Tkinter import *
-import tkFont
 from ttk import *
 import matplotlib
 import timeit
-import matplotlib.backends.backend_tkagg
 matplotlib.use("TkAgg") # needed for Macs
+import matplotlib.backends.backend_tkagg
 from Householder import Householder
 import time
 from chebyshev import Chebyshev
@@ -24,15 +23,15 @@ from scipy.integrate import quad, quadrature
 from sympy.utilities.lambdify import lambdify
 from ad_forward import *
 from ad import adnumber
-from NewtonCodes import *
+from NewtonCotes import *
 
 class App(Frame):
     def __init__(self):
         self.root = Tk()
         self.root.s = Style()
-        self.root.geometry("420x300")
-        self.root.resizable(1, 1)  # made resizable for now, may need to increase geometry
-        self.root.s.theme_use("vista") # change to "aqua" for Mac
+        self.root.geometry("645x300") # 645x300 for Mac
+        self.root.resizable(1, 1)
+        self.root.s.theme_use("aqua") # change to "aqua" for Mac
         self.root.title("Numerical Analysis - Project 2")
 
         Frame.__init__(self, self.root)
@@ -73,7 +72,7 @@ class App(Frame):
         # Least Squares Frame Buttons
         self.linearBtn = Button(self.lsLabelframe, text = "Linear", width=27, command = self.linearWindow)
         self.nonLinBtn = Button(self.lsLabelframe, text = "Nonlinear", width=27, command = self.nonLinearWindow)
-        self.linearBtn.grid(row = 0, column = 0, sticky = W)
+        self.linearBtn.grid(row = 0, column = 0)
         self.nonLinBtn.grid(row = 0, column = 1)
 
         # Differentiation and Integration Frame
@@ -120,8 +119,7 @@ class App(Frame):
         self.lagrange.title("Lagrange")
         self.lagrange.resizable(0,0)
         mainFrame = Frame(self.lagrange)
-        self._font = tkFont.Font(family="Helvetica", size=8)
-        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        self.text_box = Text(mainFrame, width=60, height=5)
         mainFrame.pack()
 
         prompt1 = "How many data points do you have?: "
@@ -203,8 +201,7 @@ class App(Frame):
         self.ndd.title("Newton's Divided Differences")
         self.ndd.resizable(0,0)
         mainFrame = Frame(self.ndd)
-        self._font = tkFont.Font(family="Helvetica", size=8)
-        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        self.text_box = Text(mainFrame, width=60, height=5)
         mainFrame.pack()
 
         prompt1 = "How many data points do you have?: "
@@ -375,8 +372,7 @@ class App(Frame):
         self.splines.resizable(1, 1)
         mainFrame = Frame(self.splines)
         mainFrame.pack()
-        self._font = tkFont.Font(family="Helvetica", size=8)
-        self.text_box = Text(mainFrame, width=60, height=5, font=self._font)
+        self.text_box = Text(mainFrame, width=60, height=5)
 
         prompt1 = "How many data points do you have?: "
         l = Label(mainFrame, text=prompt1)
@@ -623,9 +619,6 @@ class App(Frame):
         self.bezierControlPoints.set(c1 + " and " + c2)
         self.bezicutionTime.set(str(end_time) + " seconds\n")
 
-        axes = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 16}
-        in_graph = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 10}
-
         data_points_x = [x1, x2, x3, x4]
         data_points_y = [y1, y2, y3, y4]
         nodes = np.array([
@@ -646,9 +639,9 @@ class App(Frame):
         plot.set_xlim(plot_min_x, plot_max_x)
         plot.set_ylim(plot_min_y, plot_max_y)
 
+        axes = {'family': 'serif', 'color': 'darkred', 'weight': 'normal', 'size': 16}
+
         plt.title("Bezier Curve", fontdict=axes)
-        plt.text(plot_min_x, plot_max_y - 0.25, "Endpoints: " + e1 + " and " + e2, fontdict=in_graph)
-        plt.text(plot_min_x, plot_max_y - 0.5, "Control Points: " + c1 + " and " + c2, fontdict=in_graph)
         plt.show()
 
     #####################
@@ -1045,8 +1038,7 @@ class App(Frame):
 
                 R = []
                 i = 0
-                while i <= len(points[0]):
-                    # R_i
+                while i <= len(points) - 1:
                     R.append("")
                     Label(mainFrame, text="R_" + (str(i + 1)) + ": ").grid(row=row_count, column=0, sticky=W, padx=0)
                     R[i] = Entry(mainFrame, width=3)
@@ -1158,7 +1150,10 @@ class App(Frame):
 
                     _it = 0
                     start_time = timeit.default_timer()
+                    error_occurred = False
                     while _it < iterations:
+                        if error_occurred:
+                            break
                         i = 0
                         A = []
                         while i < len(x):
@@ -1169,9 +1164,15 @@ class App(Frame):
                             A0_str = base_str_x.replace(" xi", "%+f" % (x[i] * -1))
                             A0_str = A0_str.replace(" yi", "%+f" % (y[i] * -1))
                             A[i][0] = f(all_vk[0][0], A0_str, all_vk[1][0])
+                            if A[i][0] == "err":
+                                error_occurred = True
+                                break
                             A1_str = base_str_y.replace(" xi", "%+f" % (x[i] * -1))
                             A1_str = A1_str.replace(" yi", "%+f" % (y[i] * -1))
                             A[i][1] = f(all_vk[0][0], A1_str, all_vk[1][0])
+                            if A[i][1] == "err":
+                                error_occurred = True
+                                break
                             if K != "null":
                                 A[i][2] = -1
                             i += 1
@@ -1179,6 +1180,8 @@ class App(Frame):
                         i = 0
                         rk = []
                         while i < len(x):
+                            if error_occurred:
+                                break
                             rk.append([""])
                             r0_str = base_str_rk.replace(" xi", "%+f" % (x[i] * -1))
                             r0_str = r0_str.replace(" yi", "%+f" % (y[i] * -1))
@@ -1188,44 +1191,56 @@ class App(Frame):
                                 set_k = float(K)
                             r0_str = r0_str.replace("K", "%+f" % (set_k * -1))
                             rk[i][0] = f(all_vk[0][0], r0_str, all_vk[1][0])
+                            if rk[i][0] == "err":
+                                error_occurred = True
+                                break
                             i += 1
 
-                        ata = np.matmul(map(list, zip(*A)), A)
-                        lhs = ata + (lmbda * np.diag(ata))
-                        rhs = -1 * np.matmul(map(list, zip(*A)), rk)
-                        all_vk = np.linalg.solve(lhs, rhs)
-                        all_vk = all_vk.tolist()
-                        solutions.append(all_vk)
+                        if not error_occurred:
+                            A = np.array(A, dtype=float)
+                            rk = np.array(rk, dtype=float)
+                            ata = np.dot(np.array(map(list, zip(*A)), dtype=float), A)
+                            lhs = ata + (lmbda * np.diag(ata))
+                            rhs = -1 * np.dot(np.array(map(list, zip(*A)), dtype=float), rk)
+                            all_vk = np.linalg.solve(lhs, rhs)
+                            all_vk = all_vk.tolist()
+                            solutions.append(all_vk)
 
-                        inner_square = 0
-                        for r in rk:
-                            inner_square += float(r[0]) ** 2
-                        rmse.append(math.sqrt(inner_square / float(len(rk))))
-                        _it += 1
+                            inner_square = 0
+                            for r in rk:
+                                inner_square += float(r[0]) ** 2
+                            rmse.append(math.sqrt(inner_square / float(len(rk))))
+                            _it += 1
 
-                    graph_x = []
-                    i = 0
-                    while i < iterations:
-                        graph_x.append(i + 1)
-                        i += 1
-                    end_time = timeit.default_timer() - start_time
+                    if not error_occurred:
+                        graph_x = []
+                        i = 0
+                        while i < iterations:
+                            graph_x.append(i + 1)
+                            i += 1
+                        end_time = timeit.default_timer() - start_time
 
-                    i = 0
-                    for row in solutions:
-                        _str = "Iteration " + str(i + 1) + ": " + str(row)
-                        self.gnTextBox.insert(END, _str + '\n')
-                    self.gnTextBox.insert(END, '\n')
-                    i = 0
-                    for row in rmse:
-                        _str = "RMSE for Iteration " + str(i + 1) + ": " + str(row)
-                        self.gnTextBox.insert(END, _str + '\n')
-                    self.gnTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                        i = 0
+                        for row in solutions:
+                            _str = "Iteration " + str(i + 1) + ": " + str(row)
+                            self.gnTextBox.insert(END, _str + '\n')
+                            i += 1
+                        self.gnTextBox.insert(END, '\n')
+                        i = 0
+                        for row in rmse:
+                            _str = "RMSE for Iteration " + str(i + 1) + ": " + str(row)
+                            self.gnTextBox.insert(END, _str + '\n')
+                            i += 1
+                        self.gnTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
 
-                    plt.plot(graph_x, rmse)
-                    plt.xlabel("Iterations")
-                    plt.ylabel("RMSE")
-                    plt.title("RMSE over Iterations")
-                    plt.show()
+                        plt.plot(graph_x, rmse)
+                        plt.xlabel("Iterations")
+                        plt.ylabel("RMSE")
+                        plt.title("RMSE over Iterations")
+                        plt.show()
+                    else:
+                        self.gnTextBox.insert(END, "Error: Division by zero")
+
 
     def diffMethodsWindow(self):
         # create Difference Methods window

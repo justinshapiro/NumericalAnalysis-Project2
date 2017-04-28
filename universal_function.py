@@ -27,12 +27,16 @@ def format(_type, _str, var_list):
         i += 1
 
     # convert multiplication of the form ax to a*x
-    no_mul_symbols = [')', '^', '*', '+', '-', '/']
+    no_mul_symbols = [')', '^', '*', '+', '-', '/', '.']
     i = 0
     while i < len(_str):
-        # this_str = _str[i], for debugging
-        if _str[i] in var_list or _str[i].isdigit():
-            if i + 1 < len(_str) and _str[i + 1] not in no_mul_symbols:
+        this_str = _str[i] # for debugging
+        if _str[i] == '.':
+            i += 1
+            while i < len(_str) and _str[i].isdigit():
+                i += 1
+        if i + 1 < len(_str) and (_str[i] in var_list or _str[i].isdigit()):
+            if _str[i + 1] not in no_mul_symbols:
                 if i > 0:
                     _str = _str[:i + 1] + "*" + _str[i + 1:]
                 else:
@@ -101,7 +105,7 @@ def f(x, _str, y="null", *_vars):
 
     try:
         result = float(eval(_str))
-    except (TypeError, SyntaxError, NameError):
+    except (TypeError, SyntaxError, NameError, ZeroDivisionError):
         result = "err"
 
     return result
