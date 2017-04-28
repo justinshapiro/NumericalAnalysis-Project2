@@ -355,8 +355,14 @@ class App(Frame):
                     end_time = timeit.default_timer() - start_time
                     if eval != "err":
                         self.chebResult.set(eval)
-                        self.chebErr.set(f(x, func_str) / (math.pow(2, int(d) - 1) * math.factorial(d)))
-                        self.chebsecutionTime.set(str(end_time) + " seconds\n")
+                        f_eval = f(x, func_str)
+                        if f_eval != "err":
+                            self.chebErr.set(f(x, func_str) / (math.pow(2, int(d) - 1) * math.factorial(d)))
+                            self.chebsecutionTime.set(str(end_time) + " seconds\n")
+                        else:
+                            self.chebResult.set("Error: Function parse failed. Please check your syntax and try again.")
+                    else:
+                        self.chebResult.set("Error: Function parse failed. Please check your syntax and try again.")
             except AssertionError:
                 self.chebResult.set("Error: x doesn't meet the requirement a <= x <= b")
         except AssertionError:
@@ -1295,18 +1301,21 @@ class App(Frame):
             _fstr = str(fstr)
             x = float(x)
             h = float(h)
-            start_time = timeit.default_timer()
-            f_error = forward(_fstr, x, h)
-            b_error = backward(_fstr, x, h)
-            c_error = centered(_fstr, x, h)
-            diffTextBox.insert(END, "Two-Point Forward Difference: " + str(f_error) + '\n')
-            diffTextBox.insert(END, "Two-Point Backward Backward Difference: " + str(b_error) + '\n')
-            diffTextBox.insert(END, "Three-Point Centered Difference: " + str(c_error) + '\n\n')
-            diffTextBox.insert(END, "Forward Difference Error: " + str(get_error("1/x", f_error, x)) + '\n')
-            diffTextBox.insert(END, "Backward Difference Error: " + str(get_error("1/x", b_error, x)) + '\n')
-            diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n\n')
-            end_time = timeit.default_timer() - start_time
-            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            if f(x, _fstr) != "err":
+                start_time = timeit.default_timer()
+                f_error = forward(_fstr, x, h)
+                b_error = backward(_fstr, x, h)
+                c_error = centered(_fstr, x, h)
+                diffTextBox.insert(END, "Two-Point Forward Difference: " + str(f_error) + '\n')
+                diffTextBox.insert(END, "Two-Point Backward Backward Difference: " + str(b_error) + '\n')
+                diffTextBox.insert(END, "Three-Point Centered Difference: " + str(c_error) + '\n\n')
+                diffTextBox.insert(END, "Forward Difference Error: " + str(get_error("1/x", f_error, x)) + '\n')
+                diffTextBox.insert(END, "Backward Difference Error: " + str(get_error("1/x", b_error, x)) + '\n')
+                diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n')
+                end_time = timeit.default_timer() - start_time
+                self.diffTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n\n")
+            else:
+                diffTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n\n")
 
     def extrapWindow(self):
         # create Extrapolation window
@@ -1369,11 +1378,15 @@ class App(Frame):
             x = float(x)
             h = float(h)
             _fstr = str(fstr)
-            start_time = timeit.default_timer()
-            Q = richardson(_fstr, x, n, h)
-            end_time = timeit.default_timer() - start_time
-            extraTextBox.insert(END, "Richardson Extrapolation yields Q = " + str(Q) + '\n')
-            extraTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+
+            if f(x, _fstr) != "err":
+                start_time = timeit.default_timer()
+                Q = richardson(_fstr, x, n, h)
+                end_time = timeit.default_timer() - start_time
+                extraTextBox.insert(END, "Richardson Extrapolation yields Q = " + str(Q) + '\n')
+                extraTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            else:
+                extraTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
 
     def adWindow(self):
         # create Automatic Differentiation window
@@ -1420,21 +1433,26 @@ class App(Frame):
 
         Button(ad, text = "Exit Window", command = lambda: ad.destroy()).pack(fill = X)
 
-        def doAD(f, g, x):
+        def doAD(fstr, gstr, x):
             x = float(x)
-            start_time = timeit.default_timer()
-            g = format(0, g, ['x'])
-            autoDiff = forwardAutoDiff(format(0, f, ['g']), g, x)
-            gValues = float(autoDiff.calcG()), float(autoDiff.g_deriv())
-            result = (autoDiff.calcF(), autoDiff.f_deriv())
-            end_time = timeit.default_timer() - start_time
+            fstr = str(fstr)
+            gstr = str(gstr)
+            if f(x, fstr.replace('g', 'x')) != "err" and f(x, gstr.replace('g', 'x')) != "err":
+                start_time = timeit.default_timer()
+                gstr = format(0, gstr, ['x'])
+                autoDiff = forwardAutoDiff(format(0, fstr, ['g']), gstr, x)
+                gValues = float(autoDiff.calcG()), float(autoDiff.g_deriv())
+                result = (autoDiff.calcF(), autoDiff.f_deriv())
+                end_time = timeit.default_timer() - start_time
 
-            adTextBox.insert(END, '\nx = ' + str(x) + '\n')
-            adTextBox.insert(END, 'g(x) = ' + str(autoDiff.g) + '\n')
-            adTextBox.insert(END, 'g(x), g\'(x) at x = ' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
-            adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
-            adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n\n')
-            adTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                adTextBox.insert(END, '\nx = ' + str(x) + '\n')
+                adTextBox.insert(END, 'g(x) = ' + str(autoDiff.g) + '\n')
+                adTextBox.insert(END, 'g(x), g\'(x) at x = ' + str(float(autoDiff.x)) + ': ' + str(gValues) + '\n')
+                adTextBox.insert(END, 'f = ' + str(autoDiff.f) + '\n')
+                adTextBox.insert(END, 'S(f, f\') = ' + str(result) + '\n\n')
+                adTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            else:
+                adTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
 
     def nCodesWindow(self):
         # create Newton Codes window
@@ -1489,32 +1507,40 @@ class App(Frame):
             b = float(b)
             n = int(n)
 
-            def roundoff_error(fstr, a, b):
-                e_mach = np.finfo(float).eps
-                _fstr = format(1, fstr, ['x'])
-                _fstr = parse_expr(_fstr)
-                _fstr = str(diff(diff(diff(_fstr))))
-                c = (b + a) / 2
-                h = b - a
-                result = (((h**2) / float(6)) * (f(c, _fstr))) + (e_mach / float(h))
-                return result
+            try:
+                assert(a != b)
+                '''
+                def roundoff_error(fstr, a, b):
+                    e_mach = np.finfo(float).eps
+                    _fstr = format(1, fstr, ['x'])
+                    _fstr = parse_expr(_fstr)
+                    _fstr = str(diff(diff(diff(_fstr))))
+                    c = (b + a) / float(2)
+                    h = b - a
+                    result = (((h**2) / float(6)) * (f(c, _fstr))) + (e_mach / float(h))
+                    return result
+                '''
+                # call integration routines
+                if f(a, func) != "err":
+                    t_start_time = timeit.default_timer()
+                    trap = trapezoid(fstr, a, b, n)
+                    terr = trap_error(fstr, a, b)
+                    t_end_time = timeit.default_timer() - t_start_time
+                    s_start_time = timeit.default_timer()
+                    simp = simpson(fstr, a, b, n)
+                    serr = simp_error(fstr, a, b)
+                    s_end_time = timeit.default_timer() - s_start_time
 
-            # call integration routines
-            t_start_time = timeit.default_timer()
-            trap = trapezoid(fstr, a, b, n)
-            terr = trap_error(fstr, a, b)
-            t_end_time = timeit.default_timer() - t_start_time
-            s_start_time = timeit.default_timer()
-            simp = simpson(fstr, a, b, n)
-            serr = simp_error(fstr, a, b)
-            s_end_time = timeit.default_timer() - s_start_time
-
-            # print results
-            nCodesTextBox.insert(END, '\nMethod            Solution    Numerical Error      Execution Time\n' )
-            nCodesTextBox.insert(END, '-------------------------------------------------------------------\n' )
-            nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f               %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
-            nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f               %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
-            nCodesTextBox.insert(END, "\nRoundoff Error E(h) = " + str(roundoff_error(fstr, a, b)) + " (upper bound)")
+                    # print results
+                    nCodesTextBox.insert(END, '\nMethod            Solution    Numerical Error      Execution Time\n' )
+                    nCodesTextBox.insert(END, '-------------------------------------------------------------------\n' )
+                    nCodesTextBox.insert(END, 'Trapezoid      %12.6f   %6.3f               %f seconds\n'  % (trap, terr, t_end_time),'%' + '\n' )
+                    nCodesTextBox.insert(END, 'Simpson        %12.6f   %6.3f               %f seconds\n'  % (simp, serr, s_end_time),'%' + '\n\n' )
+                    # nCodesTextBox.insert(END, "\nRoundoff Error E(h) = " + str(roundoff_error(fstr, a, b)) + " (upper bound)")
+                else:
+                    nCodesTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
+            except AssertionError:
+                nCodesTextBox.insert(END, "Error: In the interval, a cannot equal b.\n")
 
     def rombergWindow(self):
         # create romberg window
@@ -1567,11 +1593,14 @@ class App(Frame):
             fstr = str(func)
             a = float(a)
             b = float(b)
-            start_time = timeit.default_timer()
-            romb = romberg(fstr, a, b, n)
-            end_time = timeit.default_timer() - start_time
-            romTextBox.insert(END, 'Romberg: ' + str(romb) + '\n')
-            self.text_box.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            if f(a, fstr) != "err":
+                start_time = timeit.default_timer()
+                romb = romberg(fstr, a, b, n)
+                end_time = timeit.default_timer() - start_time
+                romTextBox.insert(END, 'Romberg: ' + str(romb) + '\n')
+                romTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+            else:
+                romTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
 
     def quadraWindow(self):
         # create Adaptive window
@@ -1624,17 +1653,20 @@ class App(Frame):
 
             Button(adapt, text = "Exit Window", command = lambda: adapt.destroy()).pack(fill="both")
 
-            def doAdaptive(f, a, b):
-                fstr = str(f)
+            def doAdaptive(fstr, a, b):
+                fstr = str(fstr)
                 a = float(a)
                 b = float(b)
-                start_time = timeit.default_timer()
-                x = Symbol('x')
-                fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
-                result = scipy.integrate.quad(fstr, a, b)[0]
-                end_time = timeit.default_timer() - start_time
-                adaptTextBox.insert(END, "Adaptive Quadrature yields: " + str(result) + "\n")
-                adaptTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                if f(a, fstr) != "err":
+                    start_time = timeit.default_timer()
+                    x = Symbol('x')
+                    fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
+                    result = scipy.integrate.quad(fstr, a, b)[0]
+                    end_time = timeit.default_timer() - start_time
+                    adaptTextBox.insert(END, "Adaptive Quadrature yields: " + str(result) + "\n")
+                    adaptTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                else:
+                    adaptTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
 
         def gaussianWindow():
             gauss = Toplevel()
@@ -1677,17 +1709,20 @@ class App(Frame):
 
             Button(gauss, text = "Exit Window", command = lambda: gauss.destroy()).pack(fill="both")
 
-            def doGauss(f, a, b):
-                fstr = str(f)
+            def doGauss(fstr, a, b):
+                fstr = str(fstr)
                 a = float(a)
                 b = float(b)
-                start_time = timeit.default_timer()
-                x = Symbol('x')
-                fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
-                result = quadrature(np.vectorize(fstr), a, b)[0]
-                end_time = timeit.default_timer() - start_time
-                gaussTextBox.insert(END, "Gaussian Quadrature yields: " + str(result) + "\n")
-                gaussTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                if f(a, fstr) != "err":
+                    start_time = timeit.default_timer()
+                    x = Symbol('x')
+                    fstr = lambdify(x, parse_expr(format(1, fstr, ['x'])))
+                    result = quadrature(np.vectorize(fstr), a, b)[0]
+                    end_time = timeit.default_timer() - start_time
+                    gaussTextBox.insert(END, "Gaussian Quadrature yields: " + str(result) + "\n")
+                    gaussTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n")
+                else:
+                    gaussTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n")
 
     def start(self):
         self.root.mainloop()

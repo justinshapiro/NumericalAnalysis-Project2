@@ -8,9 +8,9 @@ def trap_error(_fstr, a, b):
     _fstr = format(1, _fstr, ['x'])
     _fstr = parse_expr(_fstr)
     _fstr = str(diff(diff(_fstr)))
-    c = (b + a) / 2
+    c = (b + a) / float(2)
     h = b - a
-    result = abs(((h**3) / 12) * (f(c, _fstr)))
+    result = abs(((h**3) / float(12)) * f(c, _fstr))
     return result
 
 
@@ -18,7 +18,7 @@ def simp_error(_fstr, a, b):
     _fstr = format(1, _fstr, ['x'])
     _fstr = parse_expr(_fstr)
     _fstr = str(diff(diff(diff(diff(_fstr)))))
-    c = (b + a) / 2
+    c = (b + a) / float(2)
     h = b - a
     result = abs(((h**5) / 90) * (f(c, _fstr)))
     return result

@@ -9,6 +9,9 @@ def format(_type, _str, var_list):
     # no spaces
     _str = _str.replace(' ', "")
 
+    # handle this exception if _str came from sympy
+    _str = _str.replace("exp", "e^")
+
     # convert expressions of the form a^b to a**(b)
     i = 0
     while i + 1 < len(_str):
@@ -37,6 +40,7 @@ def format(_type, _str, var_list):
         i += 1
 
     if _type == 0:
+        _str = _str.replace("exp", "math.exp")
         _str = _str.replace("e^", "math.exp")
     else:
         _str = _str.replace("e^", "exp")
@@ -98,7 +102,6 @@ def f(x, _str, y="null", *_vars):
     try:
         result = float(eval(_str))
     except (TypeError, SyntaxError, NameError):
-        print("Error: Incorrect syntax, please see manual for proper syntax.")
         result = "err"
 
     return result
