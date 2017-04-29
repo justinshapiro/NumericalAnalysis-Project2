@@ -93,6 +93,8 @@ def f(x, _str, y="null", *_vars):
         x = float(x)
     if y != "null":
         y = float(y)
+        if str(y).find('e') > -1:
+            y = 0
         var_list.append('y')
 
     next_var = 'a'
@@ -105,7 +107,7 @@ def f(x, _str, y="null", *_vars):
 
     try:
         result = float(eval(_str))
-    except (TypeError, SyntaxError, NameError, ZeroDivisionError):
+    except (TypeError, SyntaxError, NameError, ZeroDivisionError, ValueError):
         result = "err"
 
     return result

@@ -1241,7 +1241,6 @@ class App(Frame):
                     else:
                         self.gnTextBox.insert(END, "Error: Division by zero")
 
-
     def diffMethodsWindow(self):
         # create Difference Methods window
         diffMethods = Toplevel()
@@ -1324,11 +1323,11 @@ class App(Frame):
                 diffTextBox.insert(END, "Two-Point Forward Difference: " + str(f_error) + '\n')
                 diffTextBox.insert(END, "Two-Point Backward Backward Difference: " + str(b_error) + '\n')
                 diffTextBox.insert(END, "Three-Point Centered Difference: " + str(c_error) + '\n\n')
-                diffTextBox.insert(END, "Forward Difference Error: " + str(get_error("1/x", f_error, x)) + '\n')
-                diffTextBox.insert(END, "Backward Difference Error: " + str(get_error("1/x", b_error, x)) + '\n')
-                diffTextBox.insert(END, "Centered Difference Error: " + str(get_error("1/x", c_error, x)) + '\n')
+                diffTextBox.insert(END, "Forward Difference Error: " + str(get_error(_fstr, f_error, x)) + '\n')
+                diffTextBox.insert(END, "Backward Difference Error: " + str(get_error(_fstr, b_error, x)) + '\n')
+                diffTextBox.insert(END, "Centered Difference Error: " + str(get_error(_fstr, c_error, x)) + '\n')
                 end_time = timeit.default_timer() - start_time
-                self.diffTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n\n")
+                diffTextBox.insert(END, "Execution Time = " + str(end_time) + " seconds\n\n")
             else:
                 diffTextBox.insert(END, "Error: Function parse failed. Please check your syntax and try again.\n\n")
 
